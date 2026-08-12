@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://muhammadfahadjaved.vercel.app/sitemap.xml
