@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Admin Dashboard — Fahad Javed Portfolio</title>
+<style>
+    :root {
+        --bg: #0b0b0d; --panel: #16161a; --border: #2a2a30;
+        --text: #f2f2f2; --muted: #9a9aa2; --accent: #ffffff;
+    }
+    * { box-sizing: border-box; }
+    body {
+        margin: 0; font-family: -apple-system, "Segoe UI", Inter, sans-serif;
+        background: var(--bg); color: var(--text);
+    }
+    header {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 18px 28px; border-bottom: 1px solid var(--border);
+    }
+    header h1 { font-size: 1.05rem; margin: 0; font-weight: 600; }
+    button {
+        cursor: pointer; border-radius: 8px; border: 1px solid var(--border);
+        background: var(--panel); color: var(--text); padding: 8px 14px; font-size: 0.85rem;
+    }
+    button.primary { background: #fff; color: #000; border-color: #fff; font-weight: 600; }
+    button:hover { opacity: 0.85; }
+    main { max-width: 960px; margin: 0 auto; padding: 24px; }
+    .tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+    .tabs button.active { background: #fff; color: #000; }
+    .card {
+        background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+        padding: 16px; margin-bottom: 12px;
+    }
+    .card h3 { margin: 0 0 6px; font-size: 0.95rem; }
+    .card p { margin: 4px 0; color: var(--muted); font-size: 0.85rem; }
+    .row { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
+    .badge { font-size: 0.65rem; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); }
+    .badge.unread { color: #fff; border-color: #fff; }
+    input, textarea {
+        width: 100%; padding: 10px 12px; margin-bottom: 10px; border-radius: 8px;
+        border: 1px solid var(--border); background: #0f0f12; color: var(--text); font-size: 0.9rem;
+    }
+    textarea { min-height: 80px; resize: vertical; }
+    #loginView { max-width: 340px; margin: 90px auto; text-align: center; }
+    #loginView h2 { margin-bottom: 20px; }
+    .error { color: #ff6b6b; font-size: 0.8rem; margin-bottom: 10px; min-height: 16px; }
+    .actions { display: flex; gap: 8px; margin-top: 10px; }
+    .empty { color: var(--muted); text-align: center; padding: 40px 0; font-size: 0.9rem; }
+</style>
+</head>
+<body>
+
+<div id="loginView">
+    <h2>Admin Login</h2>
+    <div class="error" id="loginError"></div>
+    <input type="email" id="loginEmail" placeholder="Email" />
+    <input type="password" id="loginPassword" placeholder="Password" />
+    <button class="primary" style="width:100%" onclick="login()">Log In</button>
+</div>
+
+<div id="appView" style="display:none">
+    <header>
+        <h1>Fahad Javed — Admin Dashboard</h1>
+        <button onclick="logout()">Log Out</button>
+    </header>
+    <main>
+        <div class="tabs">
+            <button id="tabMessagesBtn" class="active" onclick="showTab('messages')">Messages</button>
+            <button id="tabProjectsBtn" onclick="showTab('projects')">Projects</button>
+        </div>
+
+        <div id="messagesView"></div>
+
+        <div id="projectsView" style="display:none">
+            <div class="card">
+                <h3>New Project</h3>
+                <input id="pTitle" placeholder="Title" />
+                <textarea id="pDesc" placeholder="Description"></textarea>
+                <input id="pTags" placeholder="Tags (comma separated)" />
+                <input id="pGithub" placeholder="GitHub URL" />
+                <input id="pLive" placeholder="Live URL" />
+                <button class="primary" onclick="createProject()">Add Project</button>
+            </div>
+            <div id="projectsList"></div>
+        </div>
+    </main>
+</div>
+
+<script>
+const API = window.location.origin; // backend serves /admin itself
+let token = localStorage.getItem('admin_token') || '';
+
+function authHeaders() {
+    return { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
+}
+
+async function login() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    const errEl = document.getElementById('loginError');
+    errEl.textContent = '';
+    try {
+        const res = await fetch(`${API}/api/auth/login`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        const data = await res.json();
+        if (!res.ok) { errEl.textContent = data.message || 'Login failed'; return; }
+        token = data.token;
+        localStorage.setItem('admin_token', token);
+        enterApp();
+    } catch (e) {
+        errEl.textContent = 'Network error.';
+    }
+}
+
+function logout() {
+    localStorage.removeItem('admin_token');
+    token = '';
+    document.getElementById('appView').style.display = 'none';
+    document.getElementById('loginView').style.display = 'block';
+}
+
+function enterApp() {
+    document.getElementById('loginView').style.display = 'none';
+    document.getElementById('appView').style.display = 'block';
+    loadMessages();
+    loadProjects();
+}
+
+function showTab(tab) {
+    document.getElementById('messagesView').style.display = tab === 'messages' ? 'block' : 'none';
+    document.getElementById('projectsView').style.display = tab === 'projects' ? 'block' : 'none';
+    document.getElementById('tabMessagesBtn').classList.toggle('active', tab === 'messages');
+    document.getElementById('tabProjectsBtn').classList.toggle('active', tab === 'projects');
+}
+
+async function loadMessages() {
+    const res = await fetch(`${API}/api/contact`, { headers: authHeaders() });
+    if (res.status === 401) return logout();
+    const messages = await res.json();
+    const el = document.getElementById('messagesView');
+    if (!messages.length) { el.innerHTML = '<div class="empty">No messages yet.</div>'; return; }
+    el.innerHTML = messages.map(m => `
+        <div class="card">
+            <div class="row">
+                <h3>${escapeHtml(m.name)} — ${escapeHtml(m.email)}</h3>
+                <span class="badge ${m.read ? '' : 'unread'}">${m.read ? 'read' : 'unread'}</span>
+            </div>
+            <p>${escapeHtml(m.message)}</p>
+            <p style="opacity:0.6">${new Date(m.createdAt).toLocaleString()}</p>
+            <div class="actions">
+                ${!m.read ? `<button onclick="markRead('${m._id}')">Mark read</button>` : ''}
+                <button onclick="deleteMessage('${m._id}')">Delete</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function markRead(id) {
+    await fetch(`${API}/api/contact/${id}/read`, { method: 'PATCH', headers: authHeaders() });
+    loadMessages();
+}
+
+async function deleteMessage(id) {
+    if (!confirm('Delete this message?')) return;
+    await fetch(`${API}/api/contact/${id}`, { method: 'DELETE', headers: authHeaders() });
+    loadMessages();
+}
+
+async function loadProjects() {
+    const res = await fetch(`${API}/api/projects`);
+    const projects = await res.json();
+    const el = document.getElementById('projectsList');
+    if (!projects.length) { el.innerHTML = '<div class="empty">No projects yet.</div>'; return; }
+    el.innerHTML = projects.map(p => `
+        <div class="card">
+            <h3>${escapeHtml(p.title)}</h3>
+            <p>${escapeHtml(p.description)}</p>
+            <p style="opacity:0.6">${(p.tags || []).join(', ')}</p>
+            <div class="actions">
+                <button onclick="deleteProject('${p._id}')">Delete</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+async function createProject() {
+    const title = document.getElementById('pTitle').value.trim();
+    const description = document.getElementById('pDesc').value.trim();
+    const tags = document.getElementById('pTags').value.split(',').map(t => t.trim()).filter(Boolean);
+    const githubUrl = document.getElementById('pGithub').value.trim();
+    const liveUrl = document.getElementById('pLive').value.trim();
+    if (!title || !description) { alert('Title and description are required.'); return; }
+
+    await fetch(`${API}/api/projects`, {
+        method: 'POST',
+        headers: authHeaders(),
+        body: JSON.stringify({ title, description, tags, githubUrl, liveUrl })
+    });
+
+    document.getElementById('pTitle').value = '';
+    document.getElementById('pDesc').value = '';
+    document.getElementById('pTags').value = '';
+    document.getElementById('pGithub').value = '';
+    document.getElementById('pLive').value = '';
+    loadProjects();
+}
+
+async function deleteProject(id) {
+    if (!confirm('Delete this project?')) return;
+    await fetch(`${API}/api/projects/${id}`, { method: 'DELETE', headers: authHeaders() });
+    loadProjects();
+}
+
+function escapeHtml(str) {
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+if (token) enterApp();
+</script>
+</body>
+</html>
