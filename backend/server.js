@@ -15,6 +15,12 @@ const app = express();
 connectDB();
 
 app.use(helmet());
+// Additional security headers
+app.use((req, res, next) => {
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+  // X-Content-Type-Options, X-Frame-Options, Referrer-Policy are already set by helmet
+  next();
+});
 app.use(express.json({ limit: '100kb' }));
 
 const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(s => s.trim()).filter(Boolean);
