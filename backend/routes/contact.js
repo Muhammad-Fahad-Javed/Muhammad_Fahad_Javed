@@ -8,7 +8,7 @@ const router = express.Router();
 
 const contactLimiter = rateLimit({
     windowMs: 60 * 60 * 1000,
-    max: 5,
+    max:100,
     message: { message: 'Too many messages sent. Please try again later.' }
 });
 

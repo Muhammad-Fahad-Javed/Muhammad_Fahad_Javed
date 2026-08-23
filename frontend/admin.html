@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f5f5f5;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: auto;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .login-box,
+        .dashboard {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.08);
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            box-sizing: border-box;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+        }
+
+        button {
+            padding: 12px 18px;
+            border: none;
+            border-radius: 6px;
+            background: #111;
+            color: white;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            opacity: 0.85;
+        }
+
+        .message {
+            border: 1px solid #ddd;
+            padding: 18px;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+
+        .success {
+            color: green;
+            margin-top: 10px;
+        }
+
+        .logout {
+            float: right;
+            background: #d00;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- LOGIN -->
+    <div id="loginBox" class="login-box">
+
+        <h1>Admin Login</h1>
+
+        <input
+            type="email"
+            id="email"
+            placeholder="Admin email"
+        >
+
+        <input
+            type="password"
+            id="password"
+            placeholder="Password"
+        >
+
+        <button onclick="login()">Login</button>
+
+        <div id="loginMessage"></div>
+
+    </div>
+
+
+    <!-- DASHBOARD -->
+    <div id="dashboard" class="dashboard hidden">
+
+        <button class="logout" onclick="logout()">Logout</button>
+
+        <h1>Contact Messages</h1>
+
+        <div id="messages">
+            Loading messages...
+        </div>
+
+    </div>
+
+</div>
+
+
+<script>
+
+const API_URL = "http://localhost:5000/api";
+
+
+// LOGIN
+async function login() {
+
+    const email = document.getElementById("email").value;
+    const password = document.getElementById("password").value;
+
+    const message = document.getElementById("loginMessage");
+
+    if (!email || !password) {
+        message.innerHTML = '<p class="error">Please enter email and password.</p>';
+        return;
+    }
+
+    try {
+
+        const response = await fetch(`${API_URL}/auth/login`, {
+
+            method: "POST",
+
+            headers: {
+                "Content-Type": "application/json"
+            },
+
+            body: JSON.stringify({
+                email,
+                password
+            })
+
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            message.innerHTML =
+                `<p class="error">${data.message || "Login failed."}</p>`;
+            return;
+        }
+
+        localStorage.setItem("adminToken", data.token);
+
+        showDashboard();
+
+    } catch (error) {
+
+        message.innerHTML =
+            '<p class="error">Cannot connect to backend.</p>';
+
+        console.error(error);
+    }
+}
+
+
+// SHOW DASHBOARD
+function showDashboard() {
+
+    document.getElementById("loginBox").classList.add("hidden");
+
+    document.getElementById("dashboard").classList.remove("hidden");
+
+    loadMessages();
+}
+
+
+// LOAD MESSAGES
+async function loadMessages() {
+
+    const token = localStorage.getItem("adminToken");
+
+    const messagesBox = document.getElementById("messages");
+
+    try {
+
+        const response = await fetch(`${API_URL}/contact`, {
+
+            headers: {
+                "Authorization": `Bearer ${token}`
+            }
+
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+
+            if (response.status === 401) {
+                logout();
+                return;
+            }
+
+            messagesBox.innerHTML =
+                `<p class="error">${data.message || "Failed to load messages."}</p>`;
+
+            return;
+        }
+
+        if (!data.length) {
+
+            messagesBox.innerHTML =
+                "<p>No messages yet.</p>";
+
+            return;
+        }
+
+        messagesBox.innerHTML = data.map(msg => `
+
+            <div class="message">
+
+                <h3>${escapeHtml(msg.name)}</h3>
+
+                <p>
+                    <strong>Email:</strong>
+                    ${escapeHtml(msg.email)}
+                </p>
+
+                <p>
+                    <strong>Message:</strong><br>
+                    ${escapeHtml(msg.message)}
+                </p>
+
+                <p>
+                    <strong>Date:</strong>
+                    ${new Date(msg.createdAt).toLocaleString()}
+                </p>
+
+                <p>
+                    <strong>Status:</strong>
+                    ${msg.read ? "Read" : "Unread"}
+                </p>
+
+                <button onclick="markRead('${msg._id}')">
+                    Mark as Read
+                </button>
+
+                <button
+                    onclick="deleteMessage('${msg._id}')"
+                    style="background:#d00;"
+                >
+                    Delete
+                </button>
+
+            </div>
+
+        `).join("");
+
+    } catch (error) {
+
+        console.error(error);
+
+        messagesBox.innerHTML =
+            '<p class="error">Cannot connect to backend.</p>';
+    }
+}
+
+
+// MARK AS READ
+async function markRead(id) {
+
+    const token = localStorage.getItem("adminToken");
+
+    await fetch(`${API_URL}/contact/${id}/read`, {
+
+        method: "PATCH",
+
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
+
+    });
+
+    loadMessages();
+}
+
+
+// DELETE
+async function deleteMessage(id) {
+
+    if (!confirm("Delete this message?")) {
+        return;
+    }
+
+    const token = localStorage.getItem("adminToken");
+
+    await fetch(`${API_URL}/contact/${id}`, {
+
+        method: "DELETE",
+
+        headers: {
+            "Authorization": `Bearer ${token}`
+        }
+
+    });
+
+    loadMessages();
+}
+
+
+// LOGOUT
+function logout() {
+
+    localStorage.removeItem("adminToken");
+
+    document.getElementById("dashboard").classList.add("hidden");
+
+    document.getElementById("loginBox").classList.remove("hidden");
+}
+
+
+// SECURITY: prevent HTML injection
+function escapeHtml(text) {
+
+    const div = document.createElement("div");
+
+    div.textContent = text;
+
+    return div.innerHTML;
+}
+
+
+// AUTO LOGIN
+if (localStorage.getItem("adminToken")) {
+    showDashboard();
+}
+
+</script>
+
+</body>
+</html>
