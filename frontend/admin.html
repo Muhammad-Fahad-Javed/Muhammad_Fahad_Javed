@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
     <title>Admin Dashboard</title>
 
     <style>
@@ -127,7 +128,9 @@
 
 <script>
 
-const API_URL = "http://localhost:5000/api";
+const API_URL = (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")
+    ? "http://localhost:5000/api"
+    : (window.API_BASE_URL ? `${window.API_BASE_URL}/api` : "https://api.muhammadfahadjaved.vercel.app/api");
 
 
 // LOGIN

@@ -1181,10 +1181,10 @@
                         const data = await response.json();
                         alert(data.message || 'Something went wrong. Please try again later.');
                     }
-                } } catch (error) {
-    console.error('Contact form error:', error);
-    alert(`Network error: ${error.message}`);
-}finally {
+                } catch (error) {
+                    console.error('Contact form error:', error);
+                    alert(`Network error: ${error.message}`);
+                } finally {
                     btn.disabled = false;
                     btn.innerHTML = originalText;
                 }
