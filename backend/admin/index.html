@@ -56,7 +56,7 @@
     <div class="error" id="loginError"></div>
     <input type="email" id="loginEmail" placeholder="Email" />
     <input type="password" id="loginPassword" placeholder="Password" />
-    <button class="primary" style="width:100%" onclick="login()">Log In</button>
+    <button class="primary" style="width:100%" id="loginBtn">Log In</button>
 </div>
 
 <div id="appView" style="display:none">
@@ -90,6 +90,7 @@
 <script>
 const API = window.location.origin; // backend serves /admin itself
 let token = localStorage.getItem('admin_token') || '';
+
 
 function authHeaders() {
     return { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' };
@@ -222,6 +223,16 @@ function escapeHtml(str) {
 }
 
 if (token) enterApp();
+// ===== FIX: Add event listener for login button =====
+document.addEventListener('DOMContentLoaded', function() {
+    const loginBtn = document.getElementById('loginBtn');
+    if (loginBtn) {
+        loginBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            login();
+        });
+    }
+});
 </script>
 </body>
 </html>
