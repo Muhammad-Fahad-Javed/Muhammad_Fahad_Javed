@@ -1022,40 +1022,19 @@
                     const controller = new AbortController();
                     const timeout = setTimeout(() => controller.abort(), 8000);
 
-                    const userRes = await fetch(`https://api.github.com/users/${GITHUB_USERNAME}`, { signal: controller
-                            .signal });
+                    const res = await fetch(`${window.API_BASE_URL}/api/github`, { signal: controller.signal });
                     clearTimeout(timeout);
-                    if (!userRes.ok) {
-                        if (userRes.status === 403) {
-                            errorEl.style.display = 'block';
-                            errorEl.innerHTML =
-                                `<i class="fas fa-clock" aria-hidden="true"></i> GitHub API rate limit exceeded. Please try again later.`;
-                            loadingEl.style.display = 'none';
-                            return;
-                        }
-                        throw new Error('User not found');
+                    
+                    if (!res.ok) {
+                        throw new Error('Failed to fetch from backend GitHub route');
                     }
-                    const userData = await userRes.json();
-
-                    let allRepos = [];
-                    let page = 1;
-                    let hasMore = true;
-                    while (hasMore) {
-                        const reposRes = await fetch(
-                            `https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=100&page=${page}`
-                            );
-                        if (!reposRes.ok) break;
-                        const reposPage = await reposRes.json();
-                        if (reposPage.length === 0) break;
-                        allRepos = allRepos.concat(reposPage);
-                        page++;
-                        if (reposPage.length < 100) hasMore = false;
+                    const allData = await res.json();
+                    
+                    // Note: allData already contains user, repos (first 100), totalStars, totalRepos
+                    // as handled by the backend. We'll trim to top 12 repos for display.
+                    if (allData.repos && allData.repos.length > 12) {
+                        allData.repos = allData.repos.slice(0, 12);
                     }
-
-                    const totalStars = allRepos.reduce((acc, r) => acc + (r.stargazers_count || 0), 0);
-                    const latestRepos = allRepos.slice(0, 12);
-
-                    const allData = { user: userData, repos: latestRepos, totalStars, totalRepos: allRepos.length };
 
                     localStorage.setItem(cacheKey, JSON.stringify(allData));
                     localStorage.setItem(cacheKey + '_time', String(now));
@@ -1130,6 +1109,67 @@
         })();
 
         // ═══════════════════════════════════════════════════════════════
+        // DYNAMIC PROJECTS FROM CMS
+        // ═══════════════════════════════════════════════════════════════
+        (function() {
+            async function renderProjects() {
+                const projectsGrid = document.getElementById('projectsGrid');
+                if (!projectsGrid) return;
+                
+                try {
+                    const response = await fetch(`${window.API_BASE_URL}/api/projects`);
+                    if (!response.ok) throw new Error('Failed to fetch projects');
+                    
+                    const projects = await response.json();
+                    
+                    // If no projects in database, leave the hardcoded ones as fallback
+                    if (projects.length === 0) return;
+                    
+                    projectsGrid.innerHTML = projects.map((p, index) => {
+                        // Safe rendering of user content
+                        const title = p.title.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                        const desc = p.description.replace(/</g, "&lt;").replace(/>/g, "&gt;");
+                        const githubUrl = p.githubUrl ? p.githubUrl.replace(/"/g, "&quot;") : "#";
+                        
+                        const tagsHtml = (p.tags || []).map(tag => 
+                            `<span>${tag.replace(/</g, "&lt;").replace(/>/g, "&gt;")}</span>`
+                        ).join('');
+
+                        const delay = (index % 3) + 1; // 1, 2, 3 for animation delay
+
+                        return `
+                            <div class="project-card animated-border reveal reveal-delay-${delay}" data-index="${index}">
+                                <div class="proj-img">
+                                    <div class="img-placeholder"><i class="fas fa-folder-open"></i><span class="placeholder-label">${title}</span></div>
+                                </div>
+                                <h3>${title}</h3>
+                                <p>${desc}</p>
+                                <div class="proj-tags">${tagsHtml}</div>
+                                <a href="${githubUrl}" target="_blank" rel="noopener noreferrer" class="proj-link"><i class="fab fa-github" aria-hidden="true"></i> View on GitHub</a>
+                            </div>
+                        `;
+                    }).join('');
+                    
+                    // Re-initialize intersection observers for new elements
+                    const observer = new IntersectionObserver((entries) => {
+                        entries.forEach(e => {
+                            if (e.isIntersecting) {
+                                e.target.classList.add('visible');
+                            }
+                        });
+                    }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+                    
+                    projectsGrid.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+                    
+                } catch (error) {
+                    console.error('Error loading projects:', error);
+                    // On error, the hardcoded HTML will just stay visible (graceful fallback)
+                }
+            }
+            
+            renderProjects();
+
+        // ═══════════════════════════════════════════════════════════════
         // CONTACT FORM
         // ═══════════════════════════════════════════════════════════════
         (function() {
@@ -1194,13 +1234,8 @@
         // ═══════════════════════════════════════════════════════════════
         // SERVICE WORKER REGISTRATION
         // ═══════════════════════════════════════════════════════════════
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('/sw.js')
-                    .then(reg => console.log('SW registered:', reg))
-                    .catch(err => console.warn('SW registration failed:', err));
-            });
-        }
+        // Service worker removed (no sw.js present)
+
 
         console.log('🚀 Premium Portfolio Upgrade Complete');
         console.log('✅ Animated borders on cards (scroll-triggered)');
