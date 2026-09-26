@@ -14,3 +14,5 @@ frontend/uploads/*
 # Prisma
 prisma/*.db
 prisma/migrations/dev.db
+
+.vercel
