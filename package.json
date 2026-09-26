@@ -1,0 +1,31 @@
+{
+  "name": "fahad-javed-portfolio-cms",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Portfolio site (static frontend) + Admin Dashboard / CMS backend (Vercel serverless functions + Prisma).",
+  "scripts": {
+    "dev": "vercel dev",
+    "postinstall": "prisma generate",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "prisma:deploy": "prisma migrate deploy",
+    "prisma:studio": "prisma studio",
+    "seed": "node prisma/seed.js",
+    "create-admin": "node scripts/create-admin.js"
+  },
+  "dependencies": {
+    "@prisma/client": "^5.20.0",
+    "@vercel/blob": "^0.27.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "cookie": "^0.6.0",
+    "nanoid": "^3.3.7"
+  },
+  "devDependencies": {
+    "prisma": "^5.20.0",
+    "dotenv": "^16.4.5"
+  },
+  "engines": {
+    "node": ">=18.x"
+  }
+}

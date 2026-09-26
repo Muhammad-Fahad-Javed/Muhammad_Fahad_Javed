@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>404 — Page Not Found | Muhammad Fahad Javed</title>
+    <meta name="description" content="The page you're looking for could not be found." />
+    <meta name="robots" content="noindex, follow" />
+    <meta name="theme-color" content="#F8F5F1" />
+
+    <!-- Absolute paths: this file is served for ANY unknown URL, at any depth -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+
+    <style>
+        /* Design tokens copied from css/style.css so this page matches the portfolio */
+        :root {
+            --accent: #5A3B22;
+            --accent-hover: #4A311D;
+            --accent-dim: rgba(90, 59, 34, 0.08);
+            --accent-border: rgba(90, 59, 34, 0.16);
+            --bg: #F8F5F1;
+            --bg-glass: rgba(46, 33, 24, 0.03);
+            --text: #2E2118;
+            --heading: #2B1F17;
+            --text-secondary: #6A5A4C;
+            --border: #E8E1D8;
+            --radius-full: 9999px;
+            --shadow-md: 0 8px 28px rgba(90, 59, 34, 0.08);
+            --shadow-lg: 0 16px 44px rgba(90, 59, 34, 0.10);
+            --shadow-glow: 0 10px 30px rgba(90, 59, 34, 0.14);
+            --font-heading: 'Cormorant Garamond', Georgia, serif;
+            --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+        }
+
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html { -webkit-text-size-adjust: 100%; }
+
+        body {
+            min-height: 100vh;
+            min-height: 100dvh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 48px 6% 72px;
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font-body);
+            line-height: 1.6;
+            overflow-x: hidden;
+            position: relative;
+        }
+
+        /* ── Background: faint grid + soft accent glow ── */
+        .bg { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+        .bg .grid {
+            position: absolute; inset: 0;
+            background-image:
+                linear-gradient(var(--accent-dim) 1px, transparent 1px),
+                linear-gradient(90deg, var(--accent-dim) 1px, transparent 1px);
+            background-size: 64px 64px;
+            -webkit-mask-image: radial-gradient(circle at 50% 45%, #000 0%, transparent 70%);
+                    mask-image: radial-gradient(circle at 50% 45%, #000 0%, transparent 70%);
+        }
+        .bg .glow {
+            position: absolute; left: 50%; top: 42%;
+            width: min(680px, 90vw); height: min(680px, 90vw);
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(90, 59, 34, 0.10), transparent 65%);
+            filter: blur(20px);
+            animation: breathe 8s ease-in-out infinite;
+        }
+
+        /* ── Content ── */
+        main { position: relative; z-index: 1; width: min(720px, 100%); text-align: center; }
+
+        .reveal { opacity: 0; transform: translateY(14px); animation: rise 0.9s cubic-bezier(.2,.7,.2,1) forwards; }
+        .d1 { animation-delay: 0.05s; } .d2 { animation-delay: 0.18s; } .d3 { animation-delay: 0.30s; }
+        .d4 { animation-delay: 0.42s; } .d5 { animation-delay: 0.54s; }
+
+        .eyebrow {
+            display: inline-flex; align-items: center; gap: 10px;
+            padding: 7px 16px;
+            border-radius: var(--radius-full);
+            background: var(--accent-dim);
+            border: 1px solid var(--accent-border);
+            color: var(--accent);
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+        }
+        .eyebrow::before {
+            content: ''; width: 6px; height: 6px; border-radius: 50%;
+            background: var(--accent);
+            animation: pulse 2.4s ease-in-out infinite;
+        }
+
+        .code {
+            margin: 18px 0 4px;
+            font-family: var(--font-heading);
+            font-weight: 300;
+            font-size: clamp(7.5rem, 26vw, 15rem);
+            line-height: 0.85;
+            letter-spacing: -0.04em;
+            color: var(--heading);
+            animation-name: rise, float;
+            animation-duration: 0.9s, 7s;
+            animation-delay: 0.18s, 1.2s;
+            animation-timing-function: cubic-bezier(.2,.7,.2,1), ease-in-out;
+            animation-iteration-count: 1, infinite;
+            animation-fill-mode: forwards, none;
+        }
+        .code span { color: var(--accent); font-style: italic; }
+
+        h1 {
+            font-family: var(--font-heading);
+            font-weight: 500;
+            font-size: clamp(1.9rem, 5vw, 3rem);
+            line-height: 1.12;
+            letter-spacing: -0.01em;
+            color: var(--heading);
+            margin: 22px 0 14px;
+        }
+
+        .lead {
+            max-width: 480px;
+            margin: 0 auto;
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .path {
+            display: inline-block;
+            max-width: 100%;
+            margin-top: 22px;
+            padding: 6px 14px;
+            border: 1px dashed var(--accent-border);
+            border-radius: var(--radius-full);
+            background: var(--bg-glass);
+            color: var(--text-secondary);
+            font-family: var(--font-mono);
+            font-size: 0.72rem;
+            overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+            vertical-align: bottom;
+        }
+        .path[hidden] { display: none; }
+
+        .actions { display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; margin-top: 36px; }
+
+        /* Same look as .btn-glow / .btn-ghost on the main site */
+        .btn-glow, .btn-ghost {
+            display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+            padding: 16px 36px;
+            border-radius: var(--radius-full);
+            font-family: var(--font-body);
+            font-size: 0.65rem; font-weight: 600;
+            letter-spacing: 1.5px; text-transform: uppercase; text-decoration: none;
+            transition: transform 0.3s ease, box-shadow 0.3s ease, background 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+        }
+        .btn-glow { background: var(--accent); color: #fff; border: 1px solid var(--accent); box-shadow: var(--shadow-md); }
+        .btn-glow:hover { background: var(--accent-hover); transform: translateY(-3px); box-shadow: var(--shadow-lg); }
+        .btn-ghost { background: var(--bg-glass); color: var(--text); border: 1px solid var(--border); }
+        .btn-ghost:hover { border-color: var(--accent); color: var(--accent); transform: translateY(-3px); box-shadow: var(--shadow-glow); }
+        .btn-glow:focus-visible, .btn-ghost:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+        footer {
+            position: fixed; left: 0; right: 0; bottom: 22px; z-index: 1;
+            text-align: center;
+            color: var(--text-secondary); opacity: 0.7;
+            font-size: 0.72rem; letter-spacing: 0.06em;
+        }
+
+        @keyframes rise    { to { opacity: 1; transform: translateY(0); } }
+        @keyframes float   { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        @keyframes breathe { 0%, 100% { opacity: 0.75; } 50% { opacity: 1; } }
+        @keyframes pulse   { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+        @media (max-width: 600px) {
+            body { padding: 40px 7% 84px; }
+            .actions { flex-direction: column; align-items: stretch; }
+            .btn-glow, .btn-ghost { padding: 16px 28px; }
+            footer { position: absolute; bottom: 20px; }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation: none !important; transition: none !important; }
+            .reveal, .code { opacity: 1; transform: none; }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg" aria-hidden="true">
+        <div class="grid"></div>
+        <div class="glow"></div>
+    </div>
+
+    <main>
+        <span class="eyebrow reveal d1">Error 404 · Page not found</span>
+
+        <div class="code" aria-hidden="true">4<span>0</span>4</div>
+
+        <h1 class="reveal d3">Nothing lives at this address.</h1>
+
+        <p class="lead reveal d3">
+            The page you're looking for doesn't exist or may have been moved.
+            Let's get you back to the work.
+        </p>
+
+        <div class="reveal d4"><span class="path" id="path" hidden></span></div>
+
+        <div class="actions reveal d5">
+            <a href="/" class="btn-glow">← Back to Home</a>
+            <a href="/#projects" class="btn-ghost">View Projects</a>
+        </div>
+    </main>
+
+    <footer>© 2026 Muhammad Fahad Javed</footer>
+
+    <script>
+        // Show the URL that failed. textContent only — never inject as HTML.
+        (function () {
+            var el = document.getElementById('path');
+            if (!el) return;
+            var p = location.pathname + location.search;
+            if (p && p !== '/' && p !== '/404.html') {
+                el.textContent = p;
+                el.hidden = false;
+            }
+        })();
+    </script>
+</body>
+</html>

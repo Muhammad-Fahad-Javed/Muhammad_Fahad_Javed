@@ -1,0 +1,273 @@
+// ============================================================================
+// Portfolio CMS — Prisma schema
+//
+// Provider is PostgreSQL by default because that is what works reliably with
+// Vercel Serverless Functions (the filesystem there is read-only/ephemeral,
+// so SQLite cannot be used in production). For local development you can
+// either point DATABASE_URL at a free Neon/Vercel Postgres branch, or run
+// Postgres in Docker. See README.md → "Local development" for both options.
+// ============================================================================
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ---------------------------------------------------------------------------
+// AUTH
+// ---------------------------------------------------------------------------
+
+model AdminUser {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  ip        String
+  success   Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([ip, createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// SINGLETONS (one row each, id is always "singleton")
+// ---------------------------------------------------------------------------
+
+model Profile {
+  id            String   @id @default("singleton")
+  fullName      String   @default("")
+  displayName   String   @default("")
+  title         String   @default("")
+  introShort    String   @default("")
+  email         String   @default("")
+  phone         String   @default("")
+  whatsapp      String   @default("")
+  location      String   @default("")
+  availability  String   @default("")
+  profileImage  String   @default("")
+  resumeUrl     String   @default("")
+  updatedAt     DateTime @updatedAt
+}
+
+model Hero {
+  id                String   @id @default("singleton")
+  heading           String   @default("")
+  name              String   @default("")
+  typedRoles        String   @default("[]") // JSON array of strings
+  subtitle          String   @default("")
+  description       String   @default("")
+  ctaText           String   @default("")
+  ctaUrl            String   @default("")
+  ctaSecondaryText  String   @default("")
+  ctaSecondaryUrl   String   @default("")
+  heroImage         String   @default("")
+  statusText        String   @default("")
+  updatedAt         DateTime @updatedAt
+}
+
+model About {
+  id          String   @id @default("singleton")
+  heading     String   @default("")
+  greeting    String   @default("")
+  subheading  String   @default("")
+  paragraphs  String   @default("[]") // JSON array of HTML paragraphs
+  tags        String   @default("[]") // JSON array of {icon,label}
+  image       String   @default("")
+  updatedAt   DateTime @updatedAt
+}
+
+model SeoSettings {
+  id              String   @id @default("singleton")
+  siteTitle       String   @default("")
+  metaDescription String   @default("")
+  keywords        String   @default("")
+  author          String   @default("")
+  ogTitle         String   @default("")
+  ogDescription   String   @default("")
+  ogImage         String   @default("")
+  twitterHandle   String   @default("")
+  canonicalUrl    String   @default("")
+  updatedAt       DateTime @updatedAt
+}
+
+model SiteSettings {
+  id              String   @id @default("singleton")
+  maintenanceMode Boolean  @default(false)
+  footerText      String   @default("")
+  gaId            String   @default("")
+  themeColor      String   @default("#5A3B22")
+  updatedAt       DateTime @updatedAt
+}
+
+// ---------------------------------------------------------------------------
+// COLLECTIONS (orderable, publishable)
+// ---------------------------------------------------------------------------
+
+model SocialLink {
+  id        String   @id @default(cuid())
+  platform  String
+  url       String
+  icon      String   @default("")
+  label     String   @default("")
+  order     Int      @default(0)
+  visible   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Skill {
+  id        String   @id @default(cuid())
+  name      String
+  category  String   @default("Other")
+  icon      String   @default("")
+  level     Int      @default(50)
+  order     Int      @default(0)
+  visible   Boolean  @default(true)
+  featured  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Project {
+  id           String   @id @default(cuid())
+  title        String
+  shortDesc    String   @default("")
+  fullDesc     String   @default("")
+  image        String   @default("")
+  images       String   @default("[]") // JSON array of urls
+  technologies String   @default("[]") // JSON array of strings
+  category     String   @default("")
+  githubUrl    String   @default("")
+  liveUrl      String   @default("")
+  date         String   @default("")
+  client       String   @default("")
+  features     String   @default("[]")
+  role         String   @default("")
+  featured     Boolean  @default(false)
+  published    Boolean  @default(true)
+  order        Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Certificate {
+  id             String   @id @default(cuid())
+  name           String
+  organization   String
+  issueDate      String   @default("")
+  expiryDate     String   @default("")
+  credentialId   String   @default("")
+  credentialUrl  String   @default("")
+  image          String   @default("")
+  description    String   @default("")
+  skills         String   @default("[]")
+  featured       Boolean  @default(false)
+  published      Boolean  @default(true)
+  order          Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model Experience {
+  id               String   @id @default(cuid())
+  company          String
+  position         String
+  startDate        String   @default("")
+  endDate          String   @default("")
+  current          Boolean  @default(false)
+  description      String   @default("")
+  responsibilities String   @default("[]")
+  technologies     String   @default("[]")
+  logo             String   @default("")
+  location         String   @default("")
+  order            Int      @default(0)
+  visible          Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model Education {
+  id          String   @id @default(cuid())
+  institution String
+  degree      String
+  program     String   @default("")
+  startDate   String   @default("")
+  endDate     String   @default("")
+  description String   @default("")
+  grade       String   @default("")
+  logo        String   @default("")
+  location    String   @default("")
+  order       Int      @default(0)
+  visible     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Service {
+  id           String   @id @default(cuid())
+  name         String
+  description  String   @default("")
+  icon         String   @default("")
+  image        String   @default("")
+  technologies String   @default("[]")
+  features     String   @default("[]")
+  priceLabel   String   @default("")
+  order        Int      @default(0)
+  visible      Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Achievement {
+  id           String   @id @default(cuid())
+  title        String
+  description  String   @default("")
+  date         String   @default("")
+  image        String   @default("")
+  organization String   @default("")
+  url          String   @default("")
+  number       Int      @default(0)
+  suffix       String   @default("+")
+  icon         String   @default("fas fa-trophy")
+  featured     Boolean  @default(false)
+  order        Int      @default(0)
+  visible      Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model Testimonial {
+  id        String   @id @default(cuid())
+  name      String
+  role      String   @default("")
+  company   String   @default("")
+  image     String   @default("")
+  text      String   @default("")
+  rating    Int      @default(5)
+  url       String   @default("")
+  published Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Media {
+  id        String   @id @default(cuid())
+  filename  String
+  url       String
+  type      String   @default("")
+  size      Int      @default(0)
+  width     Int?
+  height    Int?
+  createdAt DateTime @default(now())
+}
