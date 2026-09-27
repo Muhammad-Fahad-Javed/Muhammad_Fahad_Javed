@@ -19,9 +19,9 @@ module.exports = async (req, res) => {
       out[key] = row ? deserializeRow(row, def) : null;
     }
 
-    // Cache at the edge for a minute so normal traffic doesn't hit the DB on
-    // every single page view, while admin edits still show up quickly.
-    res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=60, stale-while-revalidate=300');
+    // Prevent edge and browser caching so Admin CMS updates appear immediately
+    // on public homepage refresh.
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate, max-age=0');
     res.status(200).json(out);
   } catch (err) {
     console.error('Public content fetch failed:', err);
