@@ -60,21 +60,24 @@ async function login(req, res) {
 
   const { email, password } = getJsonBody(req);
 
-  if (!email || !password) {
+  if (typeof email !== 'string' || typeof password !== 'string' || !email.trim() || !password.trim()) {
     res.status(400).json({
       error: 'Email and password are required.',
     });
     return;
   }
 
+  const cleanEmail = email.toLowerCase().trim();
+  const cleanPassword = password.trim();
+
   const user = await prisma.adminUser.findUnique({
     where: {
-      email: String(email).toLowerCase().trim(),
+      email: cleanEmail,
     },
   });
 
   const valid = user
-    ? await comparePassword(password, user.passwordHash)
+    ? await comparePassword(cleanPassword, user.passwordHash)
     : false;
 
   await prisma.loginAttempt.create({
