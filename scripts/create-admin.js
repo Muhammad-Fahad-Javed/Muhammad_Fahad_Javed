@@ -9,8 +9,8 @@ async function main() {
   const password = process.env.ADMIN_PASSWORD || '';
 
   if (!email || !password) {
-    console.error('Set ADMIN_EMAIL and ADMIN_PASSWORD in your environment (or .env) before running this script.');
-    process.exit(1);
+    console.warn('⚠️ ADMIN_EMAIL or ADMIN_PASSWORD environment variable not set. Skipping automatic admin creation.');
+    process.exit(0);
   }
   if (password.length < 8) {
     console.error('ADMIN_PASSWORD must be at least 8 characters.');
