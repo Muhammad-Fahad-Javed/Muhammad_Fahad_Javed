@@ -5,6 +5,7 @@
   "description": "Portfolio site (static frontend) + Admin Dashboard / CMS backend (Vercel serverless functions + Prisma).",
   "scripts": {
     "dev": "vercel dev",
+    "build": "prisma generate && prisma db push --accept-data-loss && node scripts/create-admin.js && node prisma/seed.js",
     "postinstall": "prisma generate",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
