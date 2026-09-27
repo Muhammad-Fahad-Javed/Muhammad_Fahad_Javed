@@ -36,3 +36,6 @@ window.AdminAPI = (function () {
     del: (path) => request('DELETE', path),
   };
 })();
+
+window.API = window.AdminAPI;
+
