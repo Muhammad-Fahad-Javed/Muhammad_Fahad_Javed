@@ -16,7 +16,7 @@
   'use strict';
 
   var ENDPOINT = '/api/public/content';
-  var TIMEOUT_MS = 3000;
+  var TIMEOUT_MS = 6000;
 
   function esc(str) {
     var div = document.createElement('div');
@@ -49,41 +49,63 @@
 
   // ---- ABOUT --------------------------------------------------------------
   function applyAbout(about, profile) {
-    if (!about) return;
+    if (!about && !profile) return;
     var wrap = document.querySelector('.hero-about-text');
     if (!wrap) return;
 
-    var greeting = wrap.querySelector('.greeting');
-    if (greeting && about.greeting) greeting.textContent = about.greeting;
+    if (about) {
+      var greeting = wrap.querySelector('.greeting');
+      if (greeting && about.greeting) greeting.textContent = about.greeting;
 
-    var heading = wrap.querySelector('h2');
-    if (heading && about.heading) {
-      heading.innerHTML = esc(about.heading);
-    }
+      var heading = wrap.querySelector('h2');
+      if (heading && about.heading) {
+        if (about.heading.indexOf('<') !== -1) {
+          heading.innerHTML = about.heading;
+        } else if (about.heading.indexOf('&') !== -1) {
+          var parts = about.heading.split('&');
+          heading.innerHTML = esc(parts[0]) + '<span class="highlight">&amp; ' + esc(parts.slice(1).join('&').trim()) + '</span>';
+        } else {
+          heading.textContent = about.heading;
+        }
+      }
 
-    var paragraphs = Array.isArray(about.paragraphs) ? about.paragraphs : [];
-    if (paragraphs.length) {
-      var existingPs = wrap.querySelectorAll('p');
-      existingPs.forEach(function (p) { p.remove(); });
-      var tagsDiv = wrap.querySelector('.hero-about-tags');
-      paragraphs.forEach(function (html) {
-        var p = document.createElement('p');
-        p.innerHTML = html;
-        wrap.insertBefore(p, tagsDiv);
-      });
-    }
+      var paragraphs = Array.isArray(about.paragraphs) ? about.paragraphs : [];
+      if (paragraphs.length) {
+        var existingPs = wrap.querySelectorAll('p');
+        existingPs.forEach(function (p) { p.remove(); });
+        var tagsDiv = wrap.querySelector('.hero-about-tags');
+        paragraphs.forEach(function (html) {
+          var p = document.createElement('p');
+          p.innerHTML = html == null ? '' : String(html);
+          if (tagsDiv) {
+            wrap.insertBefore(p, tagsDiv);
+          } else {
+            wrap.appendChild(p);
+          }
+        });
+      }
 
-    var tags = Array.isArray(about.tags) ? about.tags : [];
-    var tagsWrap = wrap.querySelector('.hero-about-tags');
-    if (tagsWrap && tags.length) {
-      tagsWrap.innerHTML = tags.map(function (t, i) {
-        var cls = i === 0 ? ' class="tag-primary"' : '';
-        return '<span' + cls + '><i class="' + esc(t.icon || 'fas fa-star') + '" aria-hidden="true"></i> ' + esc(t.label) + '</span>';
-      }).join('');
+      var tags = Array.isArray(about.tags) ? about.tags : [];
+      var tagsWrap = wrap.querySelector('.hero-about-tags');
+      if (tagsWrap && tags.length) {
+        tagsWrap.innerHTML = tags.map(function (t, i) {
+          var cls = i === 0 ? ' class="tag-primary"' : '';
+          var icon = (typeof t === 'object' && t && t.icon) ? t.icon : 'fas fa-star';
+          var label = (typeof t === 'object' && t && t.label) ? t.label : String(t || '');
+          return '<span' + cls + '><i class="' + esc(icon) + '" aria-hidden="true"></i> ' + esc(label) + '</span>';
+        }).join('');
+      }
     }
 
     var avatarImg = document.querySelector('.hero-avatar img');
-    if (avatarImg && about.image) avatarImg.src = about.image;
+    var avatarSrc = (profile && profile.profileImage) || (about && about.image);
+    if (avatarImg && avatarSrc) {
+      avatarImg.src = avatarSrc;
+      avatarImg.onerror = function () {
+        this.onerror = null;
+        this.src = 'images/og-image.jpg';
+      };
+    }
 
     if (profile && profile.resumeUrl) {
       var cvLink = wrap.querySelector('a.btn-ghost');
@@ -168,7 +190,7 @@
         '<span class="placeholder-label">' + esc(label) + '</span></div>';
     }
     return '<img src="' + esc(src) + '" alt="' + esc(alt) + '" loading="lazy" decoding="async" width="600" height="375" ' +
-      "onerror=\"this.parentElement.innerHTML='<div class=img-placeholder><i class=\\'" + esc(iconClass) + "\\'></i><span class=placeholder-label>" + esc(label) + "</span></div>'\">";
+      "onerror=\"this.onerror=null;this.parentElement.innerHTML='<div class=img-placeholder><i class=\\'" + esc(iconClass) + "\\'></i><span class=placeholder-label>" + esc(label) + "</span></div>'\">";
   }
 
   function applyProjects(projects) {
@@ -178,7 +200,7 @@
         .join('');
       return '<div class="project-card animated-border reveal ' + delay + hidden + '" data-index="' + i + '">' +
         '<div class="proj-img">' + imgOrPlaceholder(p.image, p.title, 'fas fa-diagram-project', p.title) + '</div>' +
-        '<h3>' + esc(p.title) + '</h3><p>' + (p.shortDesc || '') + '</p>' +
+        '<h3>' + esc(p.title) + '</h3><p>' + esc(p.shortDesc || '') + '</p>' +
         '<div class="proj-tags">' + techs + '</div>' +
         (p.githubUrl ? '<a href="' + esc(p.githubUrl) + '" target="_blank" rel="noopener noreferrer" class="proj-link"><i class="fab fa-github" aria-hidden="true"></i> View on GitHub</a>' : '') +
         (p.liveUrl ? '<a href="' + esc(p.liveUrl) + '" target="_blank" rel="noopener noreferrer" class="proj-link"><i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i> Live Demo</a>' : '') +
@@ -308,39 +330,56 @@
   }
 
   function loadMainScript() {
+    if (window.__MAIN_SCRIPT_LOADED__) return;
+    window.__MAIN_SCRIPT_LOADED__ = true;
     var s = document.createElement('script');
     s.src = 'js/main.js';
     document.body.appendChild(s);
   }
 
   function init() {
+    var url = ENDPOINT + (ENDPOINT.indexOf('?') === -1 ? '?t=' : '&t=') + Date.now();
     withTimeout(
-      fetch(ENDPOINT, { headers: { Accept: 'application/json' } }).then(function (r) {
+      fetch(url, {
+        cache: 'no-store',
+        headers: { Accept: 'application/json' }
+      }).then(function (r) {
         return r.ok ? r.json() : null;
-      }).catch(function () { return null; }),
+      }).catch(function (err) {
+        console.warn('[CMS Loader] Fetch failed:', err);
+        return null;
+      }),
       TIMEOUT_MS
     ).then(function (data) {
       if (data) {
-        try {
-          applyHero(data.hero);
-          applyAbout(data.about, data.profile);
-          applySkills(data.skills);
-          applyProjects(data.projects);
-          applyCertificates(data.certificates);
-          applyExperience(data.experience);
-          applyEducation(data.education);
-          applyServices(data.services);
-          applyAchievements(data.achievements);
-          applyTestimonials(data.testimonials);
-          applySocialAndContact(data['social-links'], data.profile);
-          applySeo(data.seo);
-        } catch (err) {
-          console.error('Content hydration error (falling back to static content):', err);
-        }
+        var safeApply = function (fn, name, arg1, arg2) {
+          try {
+            fn(arg1, arg2);
+          } catch (err) {
+            console.error('[CMS Loader] Error in section "' + name + '":', err);
+          }
+        };
+
+        safeApply(applyHero, 'hero', data.hero);
+        safeApply(applyAbout, 'about', data.about, data.profile);
+        safeApply(applySkills, 'skills', data.skills);
+        safeApply(applyProjects, 'projects', data.projects);
+        safeApply(applyCertificates, 'certificates', data.certificates);
+        safeApply(applyExperience, 'experience', data.experience);
+        safeApply(applyEducation, 'education', data.education);
+        safeApply(applyServices, 'services', data.services);
+        safeApply(applyAchievements, 'achievements', data.achievements);
+        safeApply(applyTestimonials, 'testimonials', data.testimonials);
+        safeApply(applySocialAndContact, 'socialAndContact', data['social-links'], data.profile);
+        safeApply(applySeo, 'seo', data.seo);
       }
+      loadMainScript();
+    }).catch(function (err) {
+      console.error('[CMS Loader] Unexpected error in init:', err);
       loadMainScript();
     });
   }
 
   init();
 })();
+
