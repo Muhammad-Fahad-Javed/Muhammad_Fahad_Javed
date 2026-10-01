@@ -558,7 +558,7 @@
       var me = await AdminAPI.get('/api/auth/me');
       document.getElementById('adminEmail').textContent = me.email;
     } catch (err) {
-      location.href = 'index.html';
+      location.href = '/admin/index.html';
       return;
     }
 
@@ -568,7 +568,7 @@
 
     document.getElementById('logoutBtn').addEventListener('click', async function () {
       await AdminAPI.post('/api/auth/logout');
-      location.href = 'index.html';
+      location.href = '/admin/index.html';
     });
 
     var toggle = document.getElementById('mobileNavToggle');

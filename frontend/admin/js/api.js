@@ -13,7 +13,7 @@ window.AdminAPI = (function () {
 
     if (res.status === 401 && path !== '/api/auth/login') {
       if (!location.pathname.endsWith('/admin') && !location.pathname.endsWith('/admin/') && !location.pathname.endsWith('/admin/index.html')) {
-        location.href = 'index.html';
+        location.href = '/admin/index.html';
       }
       throw new Error('Unauthorized');
     }
