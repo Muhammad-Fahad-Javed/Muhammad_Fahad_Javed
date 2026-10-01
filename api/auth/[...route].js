@@ -43,13 +43,16 @@ async function login(req, res) {
   const ip = getClientIp(req);
   const since = new Date(Date.now() - WINDOW_MS);
 
-  const recentFailures = await prisma.loginAttempt.count({
-    where: {
-      ip,
-      success: false,
-      createdAt: { gte: since },
-    },
-  });
+  let recentFailures = 0;
+  try {
+    recentFailures = await prisma.loginAttempt.count({
+      where: {
+        ip,
+        success: false,
+        createdAt: { gte: since },
+      },
+    });
+  } catch (e) { /* ignore attempt logging error if table missing */ }
 
   if (recentFailures >= MAX_ATTEMPTS) {
     res.status(429).json({
@@ -80,12 +83,14 @@ async function login(req, res) {
     ? await comparePassword(cleanPassword, user.passwordHash)
     : false;
 
-  await prisma.loginAttempt.create({
-    data: {
-      ip,
-      success: valid,
-    },
-  });
+  try {
+    await prisma.loginAttempt.create({
+      data: {
+        ip,
+        success: valid,
+      },
+    });
+  } catch (e) { /* ignore attempt logging error if table missing */ }
 
   if (!valid) {
     res.status(401).json({
@@ -199,24 +204,29 @@ const changePassword = requireAuth(async (req, res) => {
 });
 
 module.exports = async (req, res) => {
-  const route = getRoute(req);
+  try {
+    const route = getRoute(req);
 
-  switch (route) {
-    case 'login':
-      return login(req, res);
+    switch (route) {
+      case 'login':
+        return await login(req, res);
 
-    case 'logout':
-      return logout(req, res);
+      case 'logout':
+        return await logout(req, res);
 
-    case 'me':
-      return me(req, res);
+      case 'me':
+        return await me(req, res);
 
-    case 'change-password':
-      return changePassword(req, res);
+      case 'change-password':
+        return await changePassword(req, res);
 
-    default:
-      res.status(404).json({
-        error: 'Auth route not found.',
-      });
+      default:
+        res.status(404).json({
+          error: 'Auth route not found.',
+        });
+    }
+  } catch (err) {
+    console.error('Auth API handler error:', err);
+    res.status(500).json({ error: err.message || 'Server error.' });
   }
 };

@@ -18,43 +18,48 @@ function sanitizeHtmlJsonFields(data) {
 }
 
 module.exports = requireAuth(async (req, res) => {
-  const { type } = req.query;
-  const def = SINGLETONS[type];
-  if (!def) {
-    res.status(404).json({ error: `Unknown settings type "${type}".` });
-    return;
-  }
-  const model = prisma[def.model];
-
-  if (req.method === 'GET') {
-    const row = await model.upsert({
-      where: { id: 'singleton' },
-      update: {},
-      create: { id: 'singleton' },
-    });
-    res.status(200).json(deserializeRow(row, def));
-    return;
-  }
-
-  if (req.method === 'PUT' || req.method === 'PATCH') {
-    const body = getJsonBody(req);
-    if (req.method === 'PUT') {
-      const errors = validatePayload(body, def);
-      if (errors.length) {
-        res.status(400).json({ error: errors.join(' ') });
-        return;
-      }
+  try {
+    const { type } = req.query;
+    const def = SINGLETONS[type];
+    if (!def) {
+      res.status(404).json({ error: `Unknown settings type "${type}".` });
+      return;
     }
-    const data = serializePayload(body, def);
-    sanitizeHtmlJsonFields(data);
-    const updated = await model.upsert({
-      where: { id: 'singleton' },
-      update: data,
-      create: { id: 'singleton', ...data },
-    });
-    res.status(200).json(deserializeRow(updated, def));
-    return;
-  }
+    const model = prisma[def.model];
 
-  methodNotAllowed(res, ['GET', 'PUT', 'PATCH']);
+    if (req.method === 'GET') {
+      const row = await model.upsert({
+        where: { id: 'singleton' },
+        update: {},
+        create: { id: 'singleton' },
+      });
+      res.status(200).json(deserializeRow(row, def));
+      return;
+    }
+
+    if (req.method === 'PUT' || req.method === 'PATCH') {
+      const body = getJsonBody(req);
+      if (req.method === 'PUT') {
+        const errors = validatePayload(body, def);
+        if (errors.length) {
+          res.status(400).json({ error: errors.join(' ') });
+          return;
+        }
+      }
+      const data = serializePayload(body, def);
+      sanitizeHtmlJsonFields(data);
+      const updated = await model.upsert({
+        where: { id: 'singleton' },
+        update: data,
+        create: { id: 'singleton', ...data },
+      });
+      res.status(200).json(deserializeRow(updated, def));
+      return;
+    }
+
+    methodNotAllowed(res, ['GET', 'PUT', 'PATCH']);
+  } catch (err) {
+    console.error('Singleton API error:', err);
+    res.status(500).json({ error: err.message || 'Server error.' });
+  }
 });
