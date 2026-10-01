@@ -101,12 +101,19 @@ model SeoSettings {
 }
 
 model SiteSettings {
-  id              String   @id @default("singleton")
-  maintenanceMode Boolean  @default(false)
-  footerText      String   @default("")
-  gaId            String   @default("")
-  themeColor      String   @default("#5A3B22")
-  updatedAt       DateTime @updatedAt
+  id                 String   @id @default("singleton")
+  maintenanceMode    Boolean  @default(false)
+  footerText         String   @default("")
+  gaId               String   @default("")
+  themeColor         String   @default("#5A3B22")
+  primaryColor       String   @default("#4A311D")
+  secondaryColor     String   @default("#4A311D")
+  bgColor            String   @default("#F8F5F1")
+  surfaceColor       String   @default("#FBF9F6")
+  textColor          String   @default("#2E2118")
+  textSecondaryColor String   @default("#6A5A4C")
+  borderColor        String   @default("#E8E1D8")
+  updatedAt          DateTime @updatedAt
 }
 
 // ---------------------------------------------------------------------------

@@ -8,16 +8,32 @@ module.exports = async (req, res) => {
   try {
     const out = {};
 
-    for (const [key, def] of Object.entries(COLLECTIONS)) {
-      const where = def.publishField ? { [def.publishField]: true } : {};
-      const rows = await prisma[def.model].findMany({ where, orderBy: { order: 'asc' } });
-      out[key] = rows.map((r) => deserializeRow(r, def));
-    }
+    const collectionEntries = Object.entries(COLLECTIONS);
+    const singletonEntries = Object.entries(SINGLETONS);
 
-    for (const [key, def] of Object.entries(SINGLETONS)) {
-      const row = await prisma[def.model].findUnique({ where: { id: 'singleton' } });
+    const collectionPromises = collectionEntries.map(([, def]) => {
+      const where = def.publishField ? { [def.publishField]: true } : {};
+      return prisma[def.model].findMany({ where, orderBy: { order: 'asc' } });
+    });
+
+    const singletonPromises = singletonEntries.map(([, def]) => {
+      return prisma[def.model].findUnique({ where: { id: 'singleton' } });
+    });
+
+    const [collectionResults, singletonResults] = await Promise.all([
+      Promise.all(collectionPromises),
+      Promise.all(singletonPromises),
+    ]);
+
+    collectionEntries.forEach(([key, def], i) => {
+      const rows = collectionResults[i] || [];
+      out[key] = rows.map((r) => deserializeRow(r, def));
+    });
+
+    singletonEntries.forEach(([key, def], i) => {
+      const row = singletonResults[i];
       out[key] = row ? deserializeRow(row, def) : null;
-    }
+    });
 
     // Prevent edge and browser caching so Admin CMS updates appear immediately
     // on public homepage refresh.
@@ -25,7 +41,6 @@ module.exports = async (req, res) => {
     res.status(200).json(out);
   } catch (err) {
     console.error('Public content fetch failed:', err);
-    // Frontend treats a non-200 as "keep the static fallback content".
     res.status(503).json({ error: 'Content temporarily unavailable.' });
   }
 };

@@ -199,12 +199,19 @@ window.CMS_SINGLETONS = {
     ],
   },
   'site-settings': {
-    label: 'Site Settings', icon: 'fas fa-sliders',
+    label: 'Site & Theme Settings', icon: 'fas fa-sliders',
     fields: [
       { name: 'maintenanceMode', label: 'Maintenance Mode', type: 'boolean' },
-      { name: 'footerText', label: 'Footer Text', type: 'text' },
+      { name: 'footerText', label: 'Footer Text / Brand Name', type: 'text' },
       { name: 'gaId', label: 'Google Analytics ID', type: 'text' },
-      { name: 'themeColor', label: 'Theme Color', type: 'text' },
+      { name: 'themeColor', label: 'Primary Accent Color', type: 'text', placeholder: '#5A3B22' },
+      { name: 'primaryColor', label: 'Primary Brand Color', type: 'text', placeholder: '#4A311D' },
+      { name: 'secondaryColor', label: 'Secondary / Hover Color', type: 'text', placeholder: '#4A311D' },
+      { name: 'bgColor', label: 'Main Background Color', type: 'text', placeholder: '#F8F5F1' },
+      { name: 'surfaceColor', label: 'Card / Surface Background Color', type: 'text', placeholder: '#FBF9F6' },
+      { name: 'textColor', label: 'Main Text Color', type: 'text', placeholder: '#2E2118' },
+      { name: 'textSecondaryColor', label: 'Secondary / Muted Text Color', type: 'text', placeholder: '#6A5A4C' },
+      { name: 'borderColor', label: 'Border Color', type: 'text', placeholder: '#E8E1D8' },
     ],
   },
 };

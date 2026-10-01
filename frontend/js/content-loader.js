@@ -6,8 +6,7 @@
    CSS classes as the original hand-written markup (so every animation,
    IntersectionObserver, and style rule in main.js/style.css keeps working
    unchanged). If the request fails or times out, it does nothing and the
-   static HTML that shipped with the page (already seeded to match) is shown
-   instead — the page never renders empty.
+   static HTML that shipped with the page is shown instead.
 
    main.js is appended to the document only AFTER this finishes, so its
    querySelectorAll() calls always see the final, CMS-populated DOM.
@@ -33,27 +32,94 @@
     ]);
   }
 
-  function reveal(el, delayClass) {
-    if (delayClass) el.classList.add(delayClass);
-    return el;
+  // ---- THEME & SITE SETTINGS ---------------------------------------------
+  function applySiteSettings(settings) {
+    if (!settings) return;
+    var root = document.documentElement;
+
+    if (settings.themeColor) {
+      root.style.setProperty('--accent', settings.themeColor);
+      root.style.setProperty('--accent-hero', settings.themeColor);
+      var metaTheme = document.querySelector('meta[name="theme-color"]');
+      if (metaTheme) metaTheme.setAttribute('content', settings.themeColor);
+      var metaMs = document.querySelector('meta[name="msapplication-TileColor"]');
+      if (metaMs) metaMs.setAttribute('content', settings.themeColor);
+    }
+    if (settings.primaryColor) {
+      root.style.setProperty('--primary', settings.primaryColor);
+    }
+    if (settings.secondaryColor) {
+      root.style.setProperty('--accent-hover', settings.secondaryColor);
+    }
+    if (settings.bgColor) {
+      root.style.setProperty('--bg', settings.bgColor);
+      root.style.setProperty('--nav-bg', settings.bgColor);
+    }
+    if (settings.surfaceColor) {
+      root.style.setProperty('--bg-card', settings.surfaceColor);
+      root.style.setProperty('--bg-secondary', settings.surfaceColor);
+    }
+    if (settings.textColor) {
+      root.style.setProperty('--text', settings.textColor);
+      root.style.setProperty('--heading', settings.textColor);
+    }
+    if (settings.textSecondaryColor) {
+      root.style.setProperty('--text-secondary', settings.textSecondaryColor);
+      root.style.setProperty('--nav-text', settings.textSecondaryColor);
+    }
+    if (settings.borderColor) {
+      root.style.setProperty('--border', settings.borderColor);
+      root.style.setProperty('--divider', settings.borderColor);
+    }
+
+    if (settings.footerText) {
+      var copyEl = document.querySelector('.footer-copy');
+      if (copyEl) {
+        var yr = new Date().getFullYear();
+        copyEl.innerHTML = '© ' + yr + ' <strong>' + esc(settings.footerText) + '</strong> — Built with purpose. Engineered for impact.';
+      }
+    }
   }
 
-  // ---- HERO (typed roles) ----------------------------------------------
-  function applyHero(hero) {
-    if (!hero) return;
-    try {
-      var roles = Array.isArray(hero.typedRoles) ? hero.typedRoles.filter(Boolean) : [];
-      if (roles.length) window.__TYPED_ROLES__ = roles;
-    } catch (e) { /* keep default */ }
+  // ---- HERO --------------------------------------------------------------
+  function applyHero(hero, profile) {
+    if (!hero && !profile) return;
+    if (hero) {
+      try {
+        var roles = Array.isArray(hero.typedRoles) ? hero.typedRoles.filter(Boolean) : [];
+        if (roles.length) window.__TYPED_ROLES__ = roles;
+      } catch (e) { /* keep default */ }
+
+      if (hero.name) {
+        var nameOs = document.querySelector('.name-os');
+        if (nameOs) {
+          nameOs.innerHTML = esc(hero.name).replace(/\s+/g, '<br>');
+        }
+        var heroHeading = document.getElementById('hero-heading');
+        if (heroHeading) heroHeading.textContent = hero.name;
+      }
+
+      if (hero.statusText) {
+        var otwText = document.querySelector('.otw-text');
+        if (otwText) otwText.innerHTML = hero.statusText;
+      }
+
+      if (hero.ctaText && hero.ctaUrl) {
+        var otwBtn = document.querySelector('.otw-btn');
+        if (otwBtn) {
+          otwBtn.textContent = hero.ctaText;
+          otwBtn.setAttribute('href', hero.ctaUrl);
+        }
+      }
+    }
   }
 
-  // ---- ABOUT --------------------------------------------------------------
+  // ---- ABOUT & PROFILE ---------------------------------------------------
   function applyAbout(about, profile) {
     if (!about && !profile) return;
     var wrap = document.querySelector('.hero-about-text');
-    if (!wrap) return;
 
-    if (about) {
+    if (about && wrap) {
       var greeting = wrap.querySelector('.greeting');
       if (greeting && about.greeting) greeting.textContent = about.greeting;
 
@@ -106,14 +172,36 @@
         this.src = 'images/og-image.jpg';
       };
     }
+  }
 
-    if (profile && profile.resumeUrl) {
-      var cvLink = wrap.querySelector('a.btn-ghost');
-      if (cvLink && /CV/i.test(cvLink.textContent)) {
-        cvLink.setAttribute('href', profile.resumeUrl);
-        cvLink.removeAttribute('onclick');
-      }
-    }
+  // ---- CV / RESUME SYNCHRONIZATION ---------------------------------------
+  function applyResume(profile) {
+    if (!profile || !profile.resumeUrl) return;
+
+    // Cache buster using updatedAt timestamp or current time
+    var timestamp = profile.updatedAt ? new Date(profile.updatedAt).getTime() : Date.now();
+    var versionedUrl = profile.resumeUrl + (profile.resumeUrl.indexOf('?') === -1 ? '?v=' : '&v=') + timestamp;
+
+    var cvSelectors = [
+      '.nav-cv-btn',
+      '.hero-about-text a.btn-ghost',
+      '#resume a.btn-glow',
+      '#resume a.btn-ghost',
+      '#contact a.btn-glow',
+      'a[download]'
+    ];
+
+    cvSelectors.forEach(function(selector) {
+      var els = document.querySelectorAll(selector);
+      els.forEach(function(el) {
+        var text = el.textContent.toLowerCase();
+        var href = el.getAttribute('href') || '';
+        if (selector === 'a[download]' || text.indexOf('cv') !== -1 || text.indexOf('resume') !== -1 || href.indexOf('.pdf') !== -1 || href.indexOf('javascript:alert') !== -1) {
+          el.setAttribute('href', versionedUrl);
+          el.removeAttribute('onclick');
+        }
+      });
+    });
   }
 
   // ---- SKILLS ---------------------------------------------------------------
@@ -163,7 +251,7 @@
       }).join('');
     }
 
-    // Tickers (two rows, same list, reversed for the second).
+    // Tickers.
     var t1 = document.getElementById('ticker1');
     var t2 = document.getElementById('ticker2');
     var items = skills.map(function (s) {
@@ -173,7 +261,7 @@
     if (t2 && items.length) t2.innerHTML = items.slice().reverse().join('');
   }
 
-  // ---- Generic card grid renderer (projects/certs/experience/etc.) --------
+  // ---- Generic card grid renderer -------------------------------------------
   function renderGrid(gridId, items, renderItem) {
     var grid = document.getElementById(gridId);
     if (!grid || !Array.isArray(items) || !items.length) return;
@@ -295,20 +383,35 @@
 
     if (!profile) return;
 
-    // Contact section info items (GitHub/LinkedIn/WhatsApp/Location).
+    // Contact section info items.
     var ciItems = document.querySelectorAll('#contact .ci-item');
     var github = (social || []).find(function (s) { return /github/i.test(s.platform); });
     var linkedin = (social || []).find(function (s) { return /linkedin/i.test(s.platform); });
-    if (ciItems[0] && github) ciItems[0].querySelector('span').textContent = github.label || github.url;
-    if (ciItems[1] && linkedin) ciItems[1].querySelector('span').textContent = linkedin.label || linkedin.url;
-    if (ciItems[2] && profile.whatsapp) ciItems[2].querySelector('span').textContent = profile.whatsapp;
-    if (ciItems[3] && profile.location) ciItems[3].querySelector('span').textContent = profile.location;
+    if (ciItems[0] && github) {
+      var span0 = ciItems[0].querySelector('span');
+      if (span0) span0.textContent = github.label || github.url;
+    }
+    if (ciItems[1] && linkedin) {
+      var span1 = ciItems[1].querySelector('span');
+      if (span1) span1.textContent = linkedin.label || linkedin.url;
+    }
+    if (ciItems[2] && profile.whatsapp) {
+      var span2 = ciItems[2].querySelector('span');
+      if (span2) span2.textContent = profile.whatsapp;
+      var waLink = ciItems[2].querySelector('a');
+      if (waLink) waLink.setAttribute('href', 'https://wa.me/' + profile.whatsapp.replace(/[^0-9]/g, ''));
+    }
+    if (ciItems[3] && profile.location) {
+      var span3 = ciItems[3].querySelector('span');
+      if (span3) span3.textContent = profile.location;
+    }
 
-    var emailLink = document.querySelector('#contact a[href^="mailto:"]');
-    if (emailLink && profile.email) emailLink.setAttribute('href', 'mailto:' + profile.email);
-
-    var resumeLink = document.querySelector('#contact a[href$=".pdf"], #contact a[download]');
-    if (resumeLink && profile.resumeUrl) resumeLink.setAttribute('href', profile.resumeUrl);
+    var emailLinks = document.querySelectorAll('a[href^="mailto:"]');
+    if (profile.email) {
+      emailLinks.forEach(function(link) {
+        link.setAttribute('href', 'mailto:' + profile.email);
+      });
+    }
   }
 
   function applySeo(seo) {
@@ -317,14 +420,26 @@
     var setMeta = function (selector, attr, value) {
       if (!value) return;
       var el = document.querySelector(selector);
-      if (el) el.setAttribute(attr, value);
+      if (el) {
+        el.setAttribute(attr, value);
+      } else if (selector.startsWith('meta')) {
+        var matchName = selector.match(/name="([^"]+)"/);
+        var matchProp = selector.match(/property="([^"]+)"/);
+        var meta = document.createElement('meta');
+        if (matchName) meta.setAttribute('name', matchName[1]);
+        if (matchProp) meta.setAttribute('property', matchProp[1]);
+        meta.setAttribute(attr, value);
+        document.head.appendChild(meta);
+      }
     };
     setMeta('meta[name="description"]', 'content', seo.metaDescription);
+    setMeta('meta[name="keywords"]', 'content', seo.keywords);
+    setMeta('meta[name="author"]', 'content', seo.author);
     setMeta('meta[property="og:title"]', 'content', seo.ogTitle);
     setMeta('meta[property="og:description"]', 'content', seo.ogDescription);
     setMeta('meta[property="og:image"]', 'content', seo.ogImage);
-    setMeta('meta[name="twitter:title"]', 'content', seo.ogTitle);
-    setMeta('meta[name="twitter:description"]', 'content', seo.ogDescription);
+    setMeta('meta[name="twitter:title"]', 'content', seo.ogTitle || seo.siteTitle);
+    setMeta('meta[name="twitter:description"]', 'content', seo.ogDescription || seo.metaDescription);
     setMeta('meta[name="twitter:image"]', 'content', seo.ogImage);
     setMeta('link[rel="canonical"]', 'href', seo.canonicalUrl);
   }
@@ -360,8 +475,10 @@
           }
         };
 
-        safeApply(applyHero, 'hero', data.hero);
+        safeApply(applySiteSettings, 'siteSettings', data['site-settings']);
+        safeApply(applyHero, 'hero', data.hero, data.profile);
         safeApply(applyAbout, 'about', data.about, data.profile);
+        safeApply(applyResume, 'resume', data.profile);
         safeApply(applySkills, 'skills', data.skills);
         safeApply(applyProjects, 'projects', data.projects);
         safeApply(applyCertificates, 'certificates', data.certificates);
@@ -382,4 +499,3 @@
 
   init();
 })();
-
