@@ -23,7 +23,12 @@ async function upsertByUniqueField(model, whereField, whereValue, data) {
 }
 
 async function main() {
-  console.log('Seeding database from existing portfolio content...');
+  if (!process.env.DATABASE_URL) {
+    console.warn('⚠️ DATABASE_URL environment variable not set. Skipping database seeding step.');
+    return;
+  }
+  try {
+    console.log('Seeding database from existing portfolio content...');
 
   // ---- Admin user (optional convenience: also created by `npm run create-admin`) ----
   if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
@@ -330,6 +335,9 @@ async function main() {
   console.log('✅ Testimonials seeded.');
 
   console.log('\n🎉 Seed complete. The public site should now look exactly like it did before.');
+  } catch (err) {
+    console.warn('⚠️ Could not connect to database during seed (DATABASE_URL may be unconfigured during build phase). Skipping seed:', err.message);
+  }
 }
 
 main()
