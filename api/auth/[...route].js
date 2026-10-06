@@ -79,17 +79,39 @@ async function login(req, res) {
     },
   });
 
-  // If no user was found, check if credentials match the configured ADMIN_EMAIL/ADMIN_PASSWORD
-  if (!user && process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
-    if (cleanEmail === process.env.ADMIN_EMAIL.toLowerCase().trim() && cleanPassword === process.env.ADMIN_PASSWORD) {
-      try {
-        const passwordHash = await hashPassword(process.env.ADMIN_PASSWORD);
-        user = await prisma.adminUser.upsert({
-          where: { email: cleanEmail },
-          update: { passwordHash },
-          create: { email: cleanEmail, passwordHash, name: 'Admin' },
+  // If no admin user exists in the database at all, automatically initialize the first admin account
+  if (!user) {
+    const totalAdmins = await prisma.adminUser.count().catch(() => 0);
+    if (totalAdmins === 0) {
+      if (cleanPassword.length < 8) {
+        res.status(400).json({
+          error: 'Initial admin password must be at least 8 characters.',
         });
-      } catch (e) { /* ignore fallback creation error */ }
+        return;
+      }
+      try {
+        const passwordHash = await hashPassword(cleanPassword);
+        user = await prisma.adminUser.create({
+          data: {
+            email: cleanEmail,
+            passwordHash,
+            name: 'Admin',
+          },
+        });
+      } catch (e) {
+        console.error('Failed to create initial admin user:', e);
+      }
+    } else if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
+      if (cleanEmail === process.env.ADMIN_EMAIL.toLowerCase().trim() && cleanPassword === process.env.ADMIN_PASSWORD) {
+        try {
+          const passwordHash = await hashPassword(process.env.ADMIN_PASSWORD);
+          user = await prisma.adminUser.upsert({
+            where: { email: cleanEmail },
+            update: { passwordHash },
+            create: { email: cleanEmail, passwordHash, name: 'Admin' },
+          });
+        } catch (e) { /* ignore fallback creation error */ }
+      }
     }
   }
 
