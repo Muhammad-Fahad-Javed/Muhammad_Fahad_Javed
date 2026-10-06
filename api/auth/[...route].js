@@ -73,11 +73,25 @@ async function login(req, res) {
   const cleanEmail = email.toLowerCase().trim();
   const cleanPassword = password.trim();
 
-  const user = await prisma.adminUser.findUnique({
+  let user = await prisma.adminUser.findUnique({
     where: {
       email: cleanEmail,
     },
   });
+
+  // If no user was found, check if credentials match the configured ADMIN_EMAIL/ADMIN_PASSWORD
+  if (!user && process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
+    if (cleanEmail === process.env.ADMIN_EMAIL.toLowerCase().trim() && cleanPassword === process.env.ADMIN_PASSWORD) {
+      try {
+        const passwordHash = await hashPassword(process.env.ADMIN_PASSWORD);
+        user = await prisma.adminUser.upsert({
+          where: { email: cleanEmail },
+          update: { passwordHash },
+          create: { email: cleanEmail, passwordHash, name: 'Admin' },
+        });
+      } catch (e) { /* ignore fallback creation error */ }
+    }
+  }
 
   const valid = user
     ? await comparePassword(cleanPassword, user.passwordHash)

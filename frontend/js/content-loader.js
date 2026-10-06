@@ -32,6 +32,19 @@
     ]);
   }
 
+  function hexToRgba(hex, alpha) {
+    if (!hex || typeof hex !== 'string') return null;
+    hex = hex.trim();
+    if (hex.charAt(0) === '#') hex = hex.substring(1);
+    if (hex.length === 3) hex = hex.split('').map(function (c) { return c + c; }).join('');
+    if (hex.length !== 6) return null;
+    var r = parseInt(hex.substring(0, 2), 16);
+    var g = parseInt(hex.substring(2, 4), 16);
+    var b = parseInt(hex.substring(4, 6), 16);
+    if (isNaN(r) || isNaN(g) || isNaN(b)) return null;
+    return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + alpha + ')';
+  }
+
   // ---- THEME & SITE SETTINGS ---------------------------------------------
   function applySiteSettings(settings) {
     if (!settings) return;
@@ -40,6 +53,16 @@
     if (settings.themeColor) {
       root.style.setProperty('--accent', settings.themeColor);
       root.style.setProperty('--accent-hero', settings.themeColor);
+      var dim = hexToRgba(settings.themeColor, 0.08);
+      var glow = hexToRgba(settings.themeColor, 0.14);
+      var bdr = hexToRgba(settings.themeColor, 0.16);
+      if (dim) root.style.setProperty('--accent-dim', dim);
+      if (glow) {
+        root.style.setProperty('--accent-glow', glow);
+        root.style.setProperty('--shadow-glow', '0 10px 30px ' + glow);
+      }
+      if (bdr) root.style.setProperty('--accent-border', bdr);
+
       var metaTheme = document.querySelector('meta[name="theme-color"]');
       if (metaTheme) metaTheme.setAttribute('content', settings.themeColor);
       var metaMs = document.querySelector('meta[name="msapplication-TileColor"]');
@@ -62,6 +85,12 @@
     if (settings.textColor) {
       root.style.setProperty('--text', settings.textColor);
       root.style.setProperty('--heading', settings.textColor);
+      var glass = hexToRgba(settings.textColor, 0.03);
+      var bdrLight = hexToRgba(settings.textColor, 0.06);
+      var gCore = hexToRgba(settings.textColor, 0.04);
+      if (glass) root.style.setProperty('--bg-glass', glass);
+      if (bdrLight) root.style.setProperty('--border-light', bdrLight);
+      if (gCore) root.style.setProperty('--glass-core', gCore);
     }
     if (settings.textSecondaryColor) {
       root.style.setProperty('--text-secondary', settings.textSecondaryColor);

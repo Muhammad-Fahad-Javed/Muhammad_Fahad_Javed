@@ -17,7 +17,7 @@ const { hashPassword } = require('../lib/auth');
 async function upsertByUniqueField(model, whereField, whereValue, data) {
   const existing = await model.findFirst({ where: { [whereField]: whereValue } });
   if (existing) {
-    return model.update({ where: { id: existing.id }, data });
+    return existing;
   }
   return model.create({ data: { ...data, [whereField]: whereValue } });
 }

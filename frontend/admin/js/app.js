@@ -164,6 +164,27 @@
       renderObjRows();
       wrap.appendChild(objWrap);
       getValue = function () { return objs; };
+    } else if (field.type === 'color') {
+      var colorRow = document.createElement('div');
+      colorRow.style.cssText = 'display:flex;align-items:center;gap:10px;';
+      var colorPicker = document.createElement('input');
+      colorPicker.type = 'color';
+      colorPicker.style.cssText = 'width:46px;height:38px;padding:2px;border-radius:6px;border:1px solid #ddd;cursor:pointer;background:#fff;';
+      var hexVal = (value && /^#[0-9a-f]{6}$/i.test(value)) ? value : (field.placeholder || '#5A3B22');
+      colorPicker.value = hexVal;
+      var hexInput = document.createElement('input');
+      hexInput.type = 'text';
+      hexInput.value = value || hexVal;
+      hexInput.placeholder = field.placeholder || '#RRGGBB';
+      hexInput.style.cssText = 'width:120px;font-family:monospace;';
+      colorPicker.addEventListener('input', function () { hexInput.value = colorPicker.value; });
+      hexInput.addEventListener('input', function () {
+        if (/^#[0-9a-f]{6}$/i.test(hexInput.value)) colorPicker.value = hexInput.value;
+      });
+      colorRow.appendChild(colorPicker);
+      colorRow.appendChild(hexInput);
+      wrap.appendChild(colorRow);
+      getValue = function () { return hexInput.value; };
     } else {
       // text, url, email
       var input = document.createElement('input');
