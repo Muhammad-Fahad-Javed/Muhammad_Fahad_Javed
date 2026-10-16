@@ -309,9 +309,9 @@
             const nav = document.getElementById('navbar');
             const progress = document.getElementById('scroll-progress');
             const indicator = document.getElementById('navIndicator');
-            const navLinks = document.querySelectorAll('.nav-links a');
+            const navLinks = document.querySelectorAll('.nav-links a, .nav-main a');
 
-            window.addEventListener('scroll', () => {
+            function onScroll() {
                 const scroll = window.scrollY;
                 nav.classList.toggle('scrolled', scroll > 50);
                 document.getElementById('backTop').classList.toggle('visible', scroll > 500);
@@ -339,7 +339,9 @@
                 } else if (indicator) {
                     indicator.style.width = '0px';
                 }
-            });
+            }
+            window.addEventListener('scroll', onScroll, { passive: true });
+            onScroll();
 
             setTimeout(() => {
                 const activeLink = document.querySelector('.nav-links a.active') || document.querySelector(
@@ -394,9 +396,13 @@
             const banner = document.getElementById('otwBanner');
             const close = document.getElementById('otwClose');
             if (localStorage.getItem('otwClosed') === 'true') { banner.style.display = 'none'; return; }
-            setTimeout(() => banner.classList.add('show'), 300);
+            // Keep the navbar directly under the banner (the banner wraps taller on phones)
+            const syncBannerHeight = () => document.documentElement.style.setProperty('--banner-height', banner.offsetHeight + 'px');
+            window.addEventListener('resize', syncBannerHeight);
+            setTimeout(() => { banner.classList.add('show'); syncBannerHeight(); }, 300);
             close.addEventListener('click', () => {
                 banner.classList.remove('show');
+                document.documentElement.style.setProperty('--banner-height', '0px');
                 setTimeout(() => { banner.style.display = 'none'; }, 500);
                 localStorage.setItem('otwClosed', 'true');
             });

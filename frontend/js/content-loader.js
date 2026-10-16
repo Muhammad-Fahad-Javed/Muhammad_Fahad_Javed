@@ -124,8 +124,11 @@
         if (nameOs) {
           nameOs.innerHTML = esc(hero.name).replace(/\s+/g, '<br>');
         }
+        // The redesigned hero heading ("Hello, I'm Fahad Javed") is authored in
+        // index.html, so the CMS name no longer overwrites #hero-heading.
+        // (Legacy fallback: only touch a heading that is the old plain-text one.)
         var heroHeading = document.getElementById('hero-heading');
-        if (heroHeading) heroHeading.textContent = hero.name;
+        if (heroHeading && !heroHeading.classList.contains('hero-title')) heroHeading.textContent = hero.name;
       }
 
       if (hero.statusText) {

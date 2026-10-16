@@ -21,6 +21,34 @@ on top of it — without touching the original design, animations, or SEO.
 └── vercel.json
 ```
 
+## Hero section (photo background)
+
+The hero is a full-width photo with a dark overlay, an inline nav
+(HOME · ABOUT · PROJECTS · SKILLS · EXPERIENCE · CONTACT) and a scalloped wave
+that blends into the next section.
+
+- **Your photo:** replace `frontend/images/hero.jpg` (keep the filename; ~1920×1080 or larger, under ~400 KB).
+  The file shipped here is only a dark placeholder gradient.
+- **Crop:** adjust `--hero-pos` (desktop) and `--hero-pos-mobile` near the end of `frontend/css/style.css`.
+- **Overlay darkness:** adjust `--hero-overlay` in the same place.
+- **Text:** edit the `.hero-photo-content` block in `frontend/index.html`.
+- All 24 sections stay reachable through the hamburger menu.
+
+### Quick local preview (frontend only, no database needed)
+
+```bash
+cd frontend
+python3 -m http.server 8000      # then open http://localhost:8000
+```
+
+### Full local run (frontend + admin/API)
+
+```bash
+npm install
+cp .env.example .env             # fill in DATABASE_URL, JWT secret, etc.
+npx vercel dev                   # or: npm run dev
+```
+
 ## 1. How it works (architecture)
 
 The original site was 100% static HTML/CSS/JS with all content hand-written
