@@ -361,7 +361,9 @@ async function main() {
   for (const [key, rows] of Object.entries(defaults.collections)) {
     const def = registry.COLLECTIONS[key];
     if (!def) continue;
-    const matchField = key === 'site-text' ? 'key' : def.titleField;
+    // `uniqueField` lets the seed re-run safely for collections whose natural
+    // key is not the admin-facing title (site-text keys, section anchors).
+    const matchField = def.uniqueField || def.titleField;
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
       const data = { ...row, order: i };

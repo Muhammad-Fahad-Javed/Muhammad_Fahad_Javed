@@ -95,10 +95,24 @@ npx prisma migrate resolve --applied 0_init_baseline
 npx prisma migrate status
 ```
 
-The single migration in this branch is **additive only**: it adds
-`AdminUser.sessionVersion`, `LoginAttempt.identifier`, and the `Session` and
-`AuditLog` tables plus indexes. It does not drop, rename or retype anything and
-does not delete rows.
+The branch carries two migrations, both **additive only**: they do not drop,
+rename or retype anything, and they delete no rows.
+
+1. `20261017000000_security_hardening_sessions` adds `AdminUser.sessionVersion`,
+   `LoginAttempt.identifier`, and the `Session` and `AuditLog` tables plus indexes.
+2. `20261018000000_cms_full_coverage` adds the tables behind the content types
+   that used to be hard-coded in `frontend/index.html`: `WhyCard`, `ProcessStep`,
+   `Faq`, `JourneyItem`, `BlogPost`, `CommunityItem`, `BeyondCard`,
+   `CodingProfile`, `ClothericCard`, `SectionToggle`, `SiteText`,
+   `LinkedInProfile`, `ResumeSection` and `GithubSection`.
+   `SectionToggle` powers the admin **Page Sections** switches, which take a whole
+   section (and its navigation links) off the site and put it back.
+
+After the schema is in place, run the seed once with `npm run seed`. It only
+creates rows that do not exist yet, so it is safe to re-run and never overwrites
+content that has been edited in the admin. Skipping it is not harmful — the
+public page keeps its built-in markup and every section stays visible — but the
+new collections start out empty.
 
 ---
 

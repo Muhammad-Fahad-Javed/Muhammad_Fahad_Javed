@@ -140,6 +140,20 @@ CREATE TABLE "CodingProfile" (
 );
 
 -- CreateTable
+CREATE TABLE "SectionToggle" (
+    "id" TEXT NOT NULL,
+    "label" TEXT NOT NULL,
+    "sectionId" TEXT NOT NULL,
+    "note" TEXT NOT NULL DEFAULT '',
+    "visible" BOOLEAN NOT NULL DEFAULT true,
+    "order" INTEGER NOT NULL DEFAULT 0,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+
+    CONSTRAINT "SectionToggle_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "ClothericCard" (
     "id" TEXT NOT NULL,
     "icon" TEXT NOT NULL DEFAULT '',

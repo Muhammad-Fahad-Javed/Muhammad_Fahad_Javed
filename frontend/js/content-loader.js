@@ -780,6 +780,32 @@
     }
   }
 
+  // Whole-section on/off switch. Every section on the page has a row in the
+  // "Page Sections" collection; a row that is switched off hides that section
+  // and every link that points at it, so nothing scrolls into empty space.
+  function applySectionToggles(items) {
+    if (!Array.isArray(items) || !items.length) return;
+
+    var hidden = items.filter(function (item) {
+      return item && item.visible === false && /^[a-z0-9_-]+$/i.test(String(item.sectionId || ''));
+    }).map(function (item) { return String(item.sectionId); });
+
+    if (!hidden.length) return;
+
+    hidden.forEach(function (id) {
+      var section = document.getElementById(id);
+      if (section) {
+        section.style.display = 'none';
+        section.setAttribute('data-section-hidden', 'true');
+      }
+      // Top navigation, footer and anywhere else that links to the section.
+      Array.prototype.forEach.call(document.querySelectorAll('a[href="#' + id + '"]'), function (a) {
+        var item = a.closest('li') || a;
+        item.style.display = 'none';
+      });
+    });
+  }
+
   function applySeo(seo) {
     if (!seo) return;
     if (tidy(seo.siteTitle)) document.title = tidy(seo.siteTitle);
@@ -856,6 +882,7 @@
     safeApply(applyLinkedIn, 'linkedin', data.linkedin);
     safeApply(applyGithub, 'github', data.github);
     safeApply(applyResumeSection, 'resumeSection', data.resume);
+    safeApply(applySectionToggles, 'sections', data.sections);
     safeApply(applySeo, 'seo', data.seo);
   }
 

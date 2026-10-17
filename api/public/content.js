@@ -16,7 +16,9 @@ module.exports = async (req, res) => {
     const singletonEntries = Object.entries(SINGLETONS);
 
     const collectionPromises = collectionEntries.map(([, def]) => {
-      const where = def.publishField ? { [def.publishField]: true } : {};
+      const where = def.publishField && def.filterByPublish !== false
+        ? { [def.publishField]: true }
+        : {};
       return prisma[def.model].findMany({
         where,
         orderBy: [{ order: 'asc' }, { createdAt: 'asc' }],

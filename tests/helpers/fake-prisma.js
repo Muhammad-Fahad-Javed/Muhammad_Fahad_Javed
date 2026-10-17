@@ -16,6 +16,7 @@ const MODELS = [
   'whyCard', 'processStep', 'faq', 'journeyItem', 'blogPost',
   'communityItem', 'beyondCard', 'codingProfile', 'clothericCard',
   'siteText', 'linkedInProfile', 'resumeSection', 'githubSection',
+  'sectionToggle',
 ];
 
 function isPlainObject(value) {

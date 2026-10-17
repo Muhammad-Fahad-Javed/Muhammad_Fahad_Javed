@@ -79,6 +79,34 @@ const collections = {
     { icon: 'fas fa-users-cog', title: 'Product Strategy', description: 'From market research to MVP launch defining product vision, user flows, and go to-market strategy.', tagList: ['MVP', 'UX Research', 'Growth'] },
   ],
 
+  // Every section of the public page, in page order. Switch one off to take the
+  // whole section (and its navigation links) off the site temporarily.
+  sections: [
+    { label: 'Hero (top of page)', sectionId: 'hero' },
+    { label: 'About Me', sectionId: 'about' },
+    { label: 'Why Hire Me', sectionId: 'why-hire' },
+    { label: 'Clotheric (startup)', sectionId: 'clotheric' },
+    { label: 'Skills & Tech Stack', sectionId: 'skills' },
+    { label: 'Development Process', sectionId: 'process' },
+    { label: 'Featured Projects', sectionId: 'projects' },
+    { label: 'Experience', sectionId: 'experience' },
+    { label: 'Achievements', sectionId: 'achievements' },
+    { label: 'Certificates', sectionId: 'certificates' },
+    { label: 'Education', sectionId: 'education' },
+    { label: 'Services', sectionId: 'services' },
+    { label: 'Testimonials', sectionId: 'testimonials' },
+    { label: 'Coding Profiles', sectionId: 'coding' },
+    { label: 'Journey Timeline', sectionId: 'journey' },
+    { label: 'FAQ', sectionId: 'faq' },
+    { label: 'Beyond Code', sectionId: 'beyond-code' },
+    { label: 'Community', sectionId: 'community' },
+    { label: 'Blog & Articles', sectionId: 'blog' },
+    { label: 'LinkedIn Card', sectionId: 'linkedin' },
+    { label: 'GitHub Activity', sectionId: 'github' },
+    { label: 'Resume / CV', sectionId: 'resume' },
+    { label: 'Contact', sectionId: 'contact' },
+  ],
+
   // Section eyebrows and headings. Headings support the **highlight** marker.
   'site-text': [
     { key: 'about.eyebrow', label: 'About — eyebrow', group: 'About', value: 'About Me' },

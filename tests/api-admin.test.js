@@ -308,6 +308,72 @@ test('B8: the public endpoint only returns published rows', async () => {
   assert.equal(res.body.profile, null);
 });
 
+// ---------------------------------------------------------------------------
+// Page-section on/off switch ("Page Sections" collection)
+// ---------------------------------------------------------------------------
+
+test('page sections: switched-off sections still reach the public payload', async () => {
+  const prisma = createFakePrisma();
+  await prisma.sectionToggle.create({ data: { id: 's1', label: 'Blog', sectionId: 'blog', visible: true, order: 0 } });
+  await prisma.sectionToggle.create({ data: { id: 's2', label: 'FAQ', sectionId: 'faq', visible: false, order: 1 } });
+
+  const res = await call('api/public/content.js', prisma, { method: 'GET' });
+  assert.equal(res.statusCode, 200);
+  // The loader needs the switched-off rows too, otherwise it cannot tell which
+  // sections to hide. So this collection must NOT be filtered by publishField.
+  assert.equal(res.body.sections.length, 2, 'switched-off rows must not be dropped');
+  const byAnchor = Object.fromEntries(res.body.sections.map((s) => [s.sectionId, s.visible]));
+  assert.equal(byAnchor.blog, true);
+  assert.equal(byAnchor.faq, false);
+});
+
+test('page sections: hiding and showing a section round-trips through the admin API', async () => {
+  const { prisma, cookie } = await bootstrap();
+
+  const created = await call(COLLECTION, prisma, {
+    method: 'POST',
+    query: { resource: 'sections' },
+    body: { label: 'Blog & Articles', sectionId: 'blog' },
+    cookie,
+  });
+  assert.equal(created.statusCode, 201);
+  assert.equal(created.body.visible, true, 'a new section starts out shown');
+
+  const hidden = await call(ITEM, prisma, {
+    method: 'PATCH',
+    query: { resource: 'sections', id: created.body.id },
+    body: { visible: false },
+    cookie,
+  });
+  assert.equal(hidden.statusCode, 200);
+  assert.equal(hidden.body.visible, false);
+  assert.equal((await call('api/public/content.js', prisma, { method: 'GET' })).body.sections[0].visible, false);
+
+  const shown = await call(ITEM, prisma, {
+    method: 'PATCH',
+    query: { resource: 'sections', id: created.body.id },
+    body: { visible: true },
+    cookie,
+  });
+  assert.equal(shown.statusCode, 200);
+  assert.equal((await call('api/public/content.js', prisma, { method: 'GET' })).body.sections[0].visible, true);
+});
+
+test('page sections: an anchor that is not a valid section id is rejected', async () => {
+  const { prisma, cookie } = await bootstrap();
+  for (const sectionId of ['not a valid id!', 'Blog', '#blog', 'blog/', '-blog']) {
+    const res = await call(COLLECTION, prisma, {
+      method: 'POST',
+      query: { resource: 'sections' },
+      body: { label: 'X', sectionId },
+      cookie,
+    });
+    assert.equal(res.statusCode, 400, `anchor ${JSON.stringify(sectionId)} must be rejected`);
+    assert.equal(res.body.code, 'VALIDATION_ERROR');
+  }
+  assert.equal(await prisma.sectionToggle.count(), 0, 'nothing may be written when validation fails');
+});
+
 test('A11: admin endpoints require authentication', async () => {
   const { prisma } = await bootstrap();
   for (const rel of [COLLECTION, ITEM, SINGLETON, 'api/admin/stats.js', 'api/admin/export.js']) {

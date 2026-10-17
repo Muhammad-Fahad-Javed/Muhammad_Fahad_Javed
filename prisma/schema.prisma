@@ -434,6 +434,20 @@ model ClothericCard {
   updatedAt   DateTime @updatedAt
 }
 
+// Per-section on/off switch for the public page. Every section on the page has
+// a row, so the editor can take one off the site for a while and put it back
+// without deleting anything.
+model SectionToggle {
+  id        String   @id @default(cuid())
+  label     String
+  sectionId String
+  note      String   @default("")
+  visible   Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 // Key/value store for the static text scattered across the page (section
 // eyebrows, headings, navigation labels, footer, hero copy, banners).
 model SiteText {

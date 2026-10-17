@@ -233,6 +233,15 @@ window.CMS_COLLECTIONS = {
       { name: "tagList", label: "Tags", type: "json-tags" },
     ],
   },
+  "sections": {
+    label: "Page Sections", icon: "fas fa-table-columns",
+    titleField: "label", imageField: null, publishField: "visible", featuredField: null,
+    fields: [
+      { name: "label", label: "Section", type: "text", required: true },
+      { name: "sectionId", label: "Anchor (advanced)", type: "text", required: true, hint: "The id the page uses for this section, e.g. blog, faq, journey. Must match the one in the site markup." },
+      { name: "note", label: "Note to self", type: "textarea", placeholder: "Why it is hidden, so future-you remembers" },
+    ],
+  },
   "site-text": {
     label: "Text & Labels", icon: "fas fa-font",
     titleField: "label", imageField: null, publishField: "visible", featuredField: null,
