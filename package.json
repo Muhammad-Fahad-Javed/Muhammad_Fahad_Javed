@@ -5,27 +5,34 @@
   "description": "Portfolio site (static frontend) + Admin Dashboard / CMS backend (Vercel serverless functions + Prisma).",
   "scripts": {
     "dev": "vercel dev",
-    "build": "prisma generate && node scripts/prepare-build.js && node scripts/create-admin.js && node prisma/seed.js",
+    "build": "prisma generate && node scripts/prepare-build.js",
+    "start": "vercel dev",
     "postinstall": "prisma generate",
+    "test": "node --test \"tests/**/*.test.js\"",
+    "test:registry": "node scripts/generate-client-registry.js --check",
     "db:push": "prisma db push",
+    "db:deploy": "prisma migrate deploy",
+    "db:status": "prisma migrate status",
+    "db:migrate": "prisma migrate dev",
     "prisma:generate": "prisma generate",
-    "prisma:migrate": "prisma migrate dev",
-    "prisma:deploy": "prisma migrate deploy",
     "prisma:studio": "prisma studio",
     "seed": "node prisma/seed.js",
-    "create-admin": "node scripts/create-admin.js"
+    "admin:create": "node scripts/create-admin.js --create",
+    "admin:reset-password": "node scripts/create-admin.js --reset-password",
+    "registry:build": "node scripts/generate-client-registry.js"
   },
   "dependencies": {
     "@prisma/client": "^5.20.0",
     "@vercel/blob": "^0.27.0",
     "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2",
     "cookie": "^0.6.0",
-    "nanoid": "^3.3.7"
+    "jsonwebtoken": "^9.0.2",
+    "nanoid": "^3.3.7",
+    "sanitize-html": "^2.18.1"
   },
   "devDependencies": {
-    "prisma": "^5.20.0",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "prisma": "^5.20.0"
   },
   "engines": {
     "node": "22.x"

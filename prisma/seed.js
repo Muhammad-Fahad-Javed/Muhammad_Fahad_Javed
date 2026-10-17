@@ -38,15 +38,26 @@ async function main() {
   try {
     console.log('Seeding database from existing portfolio content...');
 
-  // ---- Admin user (optional convenience: also created by `npm run create-admin`) ----
+  // ---- Admin user -----------------------------------------------------------
+  // This only ever CREATES a missing account (update: {} leaves an existing
+  // password untouched), so re-running the seed can never reset credentials.
+  // Use `npm run admin:create` / `npm run admin:reset-password` to manage the
+  // account explicitly.
   if (process.env.ADMIN_EMAIL && process.env.ADMIN_PASSWORD) {
-    const passwordHash = await hashPassword(process.env.ADMIN_PASSWORD);
-    await prisma.adminUser.upsert({
-      where: { email: process.env.ADMIN_EMAIL.toLowerCase().trim() },
-      update: {},
-      create: { email: process.env.ADMIN_EMAIL.toLowerCase().trim(), passwordHash, name: 'Admin' },
-    });
-    console.log('✅ Admin user ensured.');
+    if (process.env.ADMIN_PASSWORD.length < 8) {
+      console.warn('⚠️ ADMIN_PASSWORD is shorter than 8 characters; skipping admin creation.');
+    } else {
+      const adminEmail = process.env.ADMIN_EMAIL.toLowerCase().trim();
+      const existingAdmin = await prisma.adminUser.findUnique({ where: { email: adminEmail } });
+      if (existingAdmin) {
+        console.log('ℹ️ Admin user already exists; password left unchanged.');
+      } else {
+        await prisma.adminUser.create({
+          data: { email: adminEmail, passwordHash: await hashPassword(process.env.ADMIN_PASSWORD), name: 'Admin' },
+        });
+        console.log('✅ Admin user created.');
+      }
+    }
   }
 
   // ---- Profile ----

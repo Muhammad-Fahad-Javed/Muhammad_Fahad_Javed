@@ -1,32 +1,31 @@
+// ============================================================================
+// Build preparation.
+//
+// SAFETY: this step must never modify the database.
+//
+// It previously ran `prisma db push --accept-data-loss`, which meant a routine
+// deployment could silently rewrite (and destroy) the production schema. Schema
+// changes are now applied only by an explicit, reviewed migration step:
+//
+//   npm run db:status   # show what is pending
+//   npm run db:deploy   # apply reviewed migrations
+//
+// See docs/SECURITY_DEPLOYMENT.md.
+// ============================================================================
+'use strict';
+
 require('dotenv').config();
 const { execSync } = require('child_process');
 
-function shouldSkipDbPush() {
-  const dbUrl = (process.env.DATABASE_URL || '').trim();
-  if (!dbUrl) {
-    console.warn('⚠️ DATABASE_URL not set. Skipping Prisma db push for build.');
-    return true;
-  }
-
-  if (/localhost|127\.0\.0\.1/.test(dbUrl)) {
-    console.warn('⚠️ DATABASE_URL points to a local development database. Skipping Prisma db push for build.');
-    return true;
-  }
-
-  return false;
-}
-
 function main() {
-  if (shouldSkipDbPush()) {
-    return;
-  }
-
   try {
-    console.log('Syncing Prisma schema to the configured database...');
-    execSync('npx prisma db push --accept-data-loss', { stdio: 'inherit' });
-  } catch (err) {
-    console.warn('⚠️ Prisma db push failed during build. Continuing without a database sync.');
+    console.log('Validating Prisma schema (no database changes are made)...');
+    execSync('npx prisma validate', { stdio: 'inherit' });
+  } catch {
+    console.error('Prisma schema validation failed. Aborting the build.');
+    process.exit(1);
   }
+  console.log('Build preparation complete. The database was not modified.');
 }
 
 main();

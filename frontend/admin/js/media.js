@@ -16,6 +16,10 @@ window.Media = (function () {
     if (file.size > 4 * 1024 * 1024) {
       throw new Error('File is too large. Please use a file under 4MB.');
     }
+    var nameLower = (file.name || '').toLowerCase();
+    if (nameLower.endsWith('.svg') || file.type === 'image/svg+xml') {
+      throw new Error('SVG uploads are not allowed. Please upload a PNG, JPG, WebP, AVIF or GIF image.');
+    }
     var dataBase64 = await fileToBase64(file);
     var type = file.type;
     if (!type) {
@@ -24,7 +28,6 @@ window.Media = (function () {
       else if (ext === 'webp') type = 'image/webp';
       else if (ext === 'avif') type = 'image/avif';
       else if (ext === 'gif') type = 'image/gif';
-      else if (ext === 'svg') type = 'image/svg+xml';
       else if (ext === 'pdf') type = 'application/pdf';
       else type = 'image/jpeg';
     }

@@ -22,21 +22,63 @@ generator client {
 // ---------------------------------------------------------------------------
 
 model AdminUser {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  name         String?
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id             String    @id @default(cuid())
+  email          String    @unique
+  passwordHash   String
+  name           String?
+  // Bumped whenever every session for this user must be invalidated
+  // (password change, forced logout). Checked on every authenticated request.
+  sessionVersion Int       @default(1)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  sessions       Session[]
+}
+
+// Revocable sessions. A JWT is only accepted while its row still exists, has
+// not expired, and the user's sessionVersion still matches the token.
+model Session {
+  id        String    @id @default(cuid())
+  userId    String
+  user      AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+  expiresAt DateTime
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model LoginAttempt {
-  id        String   @id @default(cuid())
-  ip        String
-  success   Boolean  @default(false)
-  createdAt DateTime @default(now())
+  id         String   @id @default(cuid())
+  ip         String
+  // Normalised account identifier (email) so throttling also works when the
+  // client IP cannot be trusted / is rotated.
+  identifier String   @default("")
+  success    Boolean  @default(false)
+  createdAt  DateTime @default(now())
 
   @@index([ip, createdAt])
+  @@index([identifier, createdAt])
+  @@index([createdAt])
+}
+
+// ---------------------------------------------------------------------------
+// AUDIT TRAIL
+// ---------------------------------------------------------------------------
+
+// Records important administrator actions. Deliberately stores no payload
+// bodies (only a short, non-sensitive meta string).
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorEmail String   @default("")
+  action     String
+  resource   String   @default("")
+  resourceId String   @default("")
+  ip         String   @default("")
+  meta       String?
+  createdAt  DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([resource, createdAt])
 }
 
 // ---------------------------------------------------------------------------

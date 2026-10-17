@@ -37,6 +37,7 @@
       var ta = document.createElement('textarea');
       ta.value = value || '';
       if (field.placeholder) ta.placeholder = field.placeholder;
+      if (field.required) ta.required = true;
       wrap.appendChild(ta);
       getValue = function () { return ta.value; };
     } else if (field.type === 'boolean') {
@@ -57,6 +58,7 @@
       num.type = 'number';
       if (field.min !== undefined) num.min = field.min;
       if (field.max !== undefined) num.max = field.max;
+      if (field.required) num.required = true;
       num.value = value === undefined || value === null ? '' : value;
       wrap.appendChild(num);
       getValue = function () { return num.value === '' ? 0 : Number(num.value); };
@@ -237,9 +239,10 @@
     } else {
       // text, url, email
       var input = document.createElement('input');
-      input.type = field.type === 'email' ? 'email' : (field.type === 'url' ? 'url' : 'text');
+      input.type = field.type === 'email' ? 'email' : (field.type === 'url' || field.type === 'link' ? 'url' : 'text');
       input.value = value === undefined || value === null ? '' : value;
       if (field.placeholder) input.placeholder = field.placeholder;
+      if (field.required) input.required = true;
       wrap.appendChild(input);
       getValue = function () { return input.value; };
     }
@@ -490,7 +493,14 @@
         await AdminAPI.post('/api/admin/' + key, payload);
         UI.toast(def.label.replace(/s$/, '') + ' created.', 'success');
       } else {
-        await AdminAPI.put('/api/admin/' + key + '/' + id, payload);
+        // Optimistic concurrency: send back the updatedAt we loaded so the
+        // server can reject a write that would silently overwrite a change
+        // made elsewhere.
+        var body = payload;
+        if (values && values.updatedAt) {
+          body = Object.assign({}, payload, { updatedAt: values.updatedAt });
+        }
+        await AdminAPI.put('/api/admin/' + key + '/' + id, body);
         UI.toast('Saved.', 'success');
       }
       try { localStorage.removeItem('cms_portfolio_cache_v2'); } catch (e) {}
