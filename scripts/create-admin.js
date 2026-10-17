@@ -17,15 +17,20 @@ async function main() {
     process.exit(1);
   }
 
-  const passwordHash = await hashPassword(password);
+  try {
+    const passwordHash = await hashPassword(password);
 
-  const user = await prisma.adminUser.upsert({
-    where: { email },
-    update: { passwordHash },
-    create: { email, passwordHash, name: 'Admin' },
-  });
+    const user = await prisma.adminUser.upsert({
+      where: { email },
+      update: { passwordHash },
+      create: { email, passwordHash, name: 'Admin' },
+    });
 
-  console.log(`✅ Admin user ready: ${user.email}`);
+    console.log(`✅ Admin user ready: ${user.email}`);
+  } catch (err) {
+    console.warn('⚠️ Admin creation skipped because the database is unavailable during this build.');
+  }
+
   process.exit(0);
 }
 

@@ -27,6 +27,14 @@ async function main() {
     console.warn('⚠️ DATABASE_URL environment variable not set. Skipping database seeding step.');
     return;
   }
+
+  try {
+    await prisma.$connect();
+  } catch (err) {
+    console.warn('⚠️ Database not reachable during build. Skipping database seeding step.');
+    return;
+  }
+
   try {
     console.log('Seeding database from existing portfolio content...');
 
