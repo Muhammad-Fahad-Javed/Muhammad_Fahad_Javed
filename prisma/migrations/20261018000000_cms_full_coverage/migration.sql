@@ -145,6 +145,7 @@ CREATE TABLE "ClothericCard" (
     "icon" TEXT NOT NULL DEFAULT '',
     "title" TEXT NOT NULL,
     "description" TEXT NOT NULL DEFAULT '',
+    "tagList" TEXT NOT NULL DEFAULT '[]',
     "order" INTEGER NOT NULL DEFAULT 0,
     "visible" BOOLEAN NOT NULL DEFAULT true,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,

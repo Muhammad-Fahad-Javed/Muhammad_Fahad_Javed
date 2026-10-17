@@ -427,6 +427,7 @@ model ClothericCard {
   icon        String   @default("")
   title       String
   description String   @default("")
+  tagList     String   @default("[]")
   order       Int      @default(0)
   visible     Boolean  @default(true)
   createdAt   DateTime @default(now())

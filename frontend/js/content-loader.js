@@ -581,10 +581,15 @@
     var grid = document.querySelector('#clotheric .grid-2');
     if (!grid || !Array.isArray(items) || !items.length) return;
     grid.innerHTML = items.map(function (c) {
+      var tags = (Array.isArray(c.tagList) ? c.tagList : []).map(function (t) {
+        return '<span style="font-size:0.45rem;font-weight:600;padding:3px 12px;border-radius:var(--radius-full);background:var(--bg-glass);border:1px solid var(--border-light);color:var(--text-secondary);font-family:var(--font-body);">' + esc(t) + '</span>';
+      }).join('');
       return '<div class="card" style="padding:24px 28px;align-items:center;text-align:center;border-top:3px solid var(--accent);">' +
         '<div style="font-size:2.4rem;color:var(--accent);margin-bottom:6px;"><i class="' + esc(c.icon || 'fas fa-shapes') + '" aria-hidden="true"></i></div>' +
         '<h3 style="font-size:1rem;">' + esc(c.title) + '</h3>' +
-        '<p style="font-size:0.75rem;opacity:0.65;">' + esc(c.description) + '</p></div>';
+        '<p style="font-size:0.75rem;opacity:0.65;">' + esc(c.description) + '</p>' +
+        (tags ? '<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;justify-content:center;">' + tags + '</div>' : '') +
+        '</div>';
     }).join('');
   }
 

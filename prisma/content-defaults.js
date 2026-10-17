@@ -75,8 +75,8 @@ const collections = {
   ],
 
   clotheric: [
-    { icon: 'fas fa-laptop-code', title: 'Platform Architecture', description: 'Scalable full stack architecture designed for growth, with modular components and clean separation of concerns.' },
-    { icon: 'fas fa-users-cog', title: 'Product Strategy', description: 'From market research to MVP launch defining product vision, user flows, and go to-market strategy.' },
+    { icon: 'fas fa-laptop-code', title: 'Platform Architecture', description: 'Scalable full stack architecture designed for growth, with modular components and clean separation of concerns.', tagList: ['React', 'Node.js', 'PostgreSQL'] },
+    { icon: 'fas fa-users-cog', title: 'Product Strategy', description: 'From market research to MVP launch defining product vision, user flows, and go to-market strategy.', tagList: ['MVP', 'UX Research', 'Growth'] },
   ],
 
   // Section eyebrows and headings. Headings support the **highlight** marker.

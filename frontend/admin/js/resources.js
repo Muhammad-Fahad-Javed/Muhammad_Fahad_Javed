@@ -230,6 +230,7 @@ window.CMS_COLLECTIONS = {
       { name: "title", label: "Title", type: "text", required: true },
       { name: "description", label: "Description", type: "textarea" },
       { name: "icon", label: "Icon (Font Awesome class)", type: "text" },
+      { name: "tagList", label: "Tags", type: "json-tags" },
     ],
   },
   "site-text": {
