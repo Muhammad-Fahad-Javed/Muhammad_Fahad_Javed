@@ -205,6 +205,7 @@ window.CMS_COLLECTIONS = {
     fields: [
       { name: "title", label: "Title", type: "text", required: true },
       { name: "description", label: "Description", type: "textarea" },
+      { name: "tagline", label: "Highlight line", type: "text", placeholder: "📚 30+ books" },
       { name: "icon", label: "Icon (Font Awesome class)", type: "text" },
     ],
   },
@@ -219,6 +220,7 @@ window.CMS_COLLECTIONS = {
       { name: "image", label: "Logo / Image", type: "image" },
       { name: "url", label: "Profile URL", type: "url" },
       { name: "badge", label: "Badge text", type: "text", placeholder: "Active" },
+      { name: "stats", label: "Stats line", type: "text", placeholder: "48 solved · 15-day streak" },
     ],
   },
   "clotheric": {

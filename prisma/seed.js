@@ -13,6 +13,8 @@
 require('dotenv').config();
 const prisma = require('../lib/db');
 const { hashPassword } = require('../lib/auth');
+const registry = require('../lib/resources');
+const defaults = require('./content-defaults');
 
 async function upsertByUniqueField(model, whereField, whereValue, data) {
   const existing = await model.findFirst({ where: { [whereField]: whereValue } });
@@ -352,6 +354,37 @@ async function main() {
     });
   }
   console.log('✅ Testimonials seeded.');
+
+  // ---- Section types that were previously hardcoded -------------------------
+  // Same payload shape as an admin export/import, so the values can also be
+  // re-applied to an existing database with POST /api/admin/import.
+  for (const [key, rows] of Object.entries(defaults.collections)) {
+    const def = registry.COLLECTIONS[key];
+    if (!def) continue;
+    const matchField = key === 'site-text' ? 'key' : def.titleField;
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const data = { ...row, order: i };
+      if (def.publishField && data[def.publishField] === undefined) data[def.publishField] = true;
+      if (def.featuredField && data[def.featuredField] === undefined) data[def.featuredField] = false;
+      for (const field of def.fields) {
+        if (Array.isArray(data[field.name])) data[field.name] = JSON.stringify(data[field.name]);
+      }
+      await upsertByUniqueField(prisma[def.model], matchField, row[matchField], data);
+    }
+    console.log(`✅ ${def.label} seeded.`);
+  }
+
+  for (const [key, data] of Object.entries(defaults.singletons)) {
+    const def = registry.SINGLETONS[key];
+    if (!def) continue;
+    const create = { id: 'singleton', ...data };
+    for (const field of def.fields) {
+      if (Array.isArray(create[field.name])) create[field.name] = JSON.stringify(create[field.name]);
+    }
+    await prisma[def.model].upsert({ where: { id: 'singleton' }, update: {}, create });
+    console.log(`✅ ${def.label} seeded.`);
+  }
 
   console.log('\n🎉 Seed complete. The public site should now look exactly like it did before.');
   } catch (err) {

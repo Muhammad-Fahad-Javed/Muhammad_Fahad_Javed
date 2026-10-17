@@ -399,6 +399,7 @@ model BeyondCard {
   icon        String   @default("")
   title       String
   description String   @default("")
+  tagline     String   @default("")
   order       Int      @default(0)
   visible     Boolean  @default(true)
   createdAt   DateTime @default(now())
@@ -414,6 +415,7 @@ model CodingProfile {
   image       String   @default("")
   url         String   @default("")
   badge       String   @default("")
+  stats       String   @default("")
   order       Int      @default(0)
   visible     Boolean  @default(true)
   createdAt   DateTime @default(now())

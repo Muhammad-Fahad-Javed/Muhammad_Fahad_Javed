@@ -459,6 +459,246 @@
     }).join('');
   }
 
+  // ---- Additional editable sections -----------------------------------------
+
+  function applyWhyHire(items) {
+    var grid = document.querySelector('.why-grid');
+    if (!grid || !Array.isArray(items) || !items.length) return;
+    grid.innerHTML = items.map(function (w, i) {
+      var num = (i + 1 < 10 ? '0' : '') + (i + 1);
+      return '<div class="why-card animated-border reveal reveal-delay-' + ((i % 5) + 1) + '" data-border="why-' + (i + 1) + '">' +
+        '<span class="why-number">' + num + '</span>' +
+        '<div class="why-icon"><i class="' + esc(w.icon || 'fas fa-star') + '" aria-hidden="true"></i></div>' +
+        '<h3>' + esc(w.title) + '</h3><p>' + esc(w.description) + '</p></div>';
+    }).join('');
+  }
+
+  function applyProcess(items) {
+    var wrap = document.querySelector('.process-timeline');
+    if (!wrap || !Array.isArray(items) || !items.length) return;
+    wrap.innerHTML = items.map(function (s, i) {
+      return '<div class="process-step"><div class="ps-icon">' +
+        '<i class="' + esc(s.icon || 'fas fa-circle') + '" aria-hidden="true"></i>' +
+        '<span class="ps-step-num">' + (i + 1) + '</span></div>' +
+        '<h3>' + esc(s.title) + '</h3><p>' + esc(s.description) + '</p></div>';
+    }).join('');
+  }
+
+  function applyFaq(items) {
+    var grid = document.querySelector('.faq-grid');
+    if (!grid || !Array.isArray(items) || !items.length) return;
+    grid.innerHTML = items.map(function (f, i) {
+      return '<div class="faq-item animated-border' + (i === 0 ? ' open' : '') + '">' +
+        '<div class="faq-q" role="button" tabindex="0" aria-expanded="' + (i === 0) + '">' +
+        '<span>' + esc(f.question) + '</span>' +
+        '<span class="faq-toggle"><i class="fas fa-plus" aria-hidden="true"></i></span></div>' +
+        '<div class="faq-a">' + (f.answer || '') + '</div></div>';
+    }).join('');
+    // The static markup used an inline onclick; rebuild the toggle behaviour as
+    // real listeners so the behaviour survives re-rendering.
+    Array.prototype.forEach.call(grid.querySelectorAll('.faq-q'), function (q) {
+      var toggle = function () {
+        var isOpen = q.parentElement.classList.toggle('open');
+        q.setAttribute('aria-expanded', String(isOpen));
+      };
+      q.addEventListener('click', toggle);
+      q.addEventListener('keydown', function (ev) {
+        if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); toggle(); }
+      });
+    });
+  }
+
+  function applyBeyond(items) {
+    var grid = document.querySelector('.beyond-grid');
+    if (!grid || !Array.isArray(items) || !items.length) return;
+    grid.innerHTML = items.map(function (b, i) {
+      return '<div class="beyond-card animated-border reveal reveal-delay-' + ((i % 5) + 1) + '">' +
+        '<div class="beyond-icon"><i class="' + esc(b.icon || 'fas fa-heart') + '" aria-hidden="true"></i></div>' +
+        '<h3>' + esc(b.title) + '</h3><p>' + esc(b.description) + '</p>' +
+        (b.tagline ? '<span class="beyond-tag accent-tag">' + esc(b.tagline) + '</span>' : '') +
+        '</div>';
+    }).join('');
+  }
+
+  function applyCommunity(items) {
+    renderGrid('communityGrid', items, function (c, i, delay, hidden) {
+      return '<div class="community-card animated-border reveal ' + delay + hidden + '" data-index="' + i + '">' +
+        '<div class="comm-img">' + imgOrPlaceholder(c.image, c.title, c.icon || 'fas fa-users', c.title) + '</div>' +
+        '<h3>' + esc(c.title) + '</h3><p>' + esc(c.description) + '</p>' +
+        (c.stats ? '<div class="comm-stats">' + esc(c.stats) + '</div>' : '') +
+        (c.url ? '<a class="proj-link" href="' + esc(c.url) + '" target="_blank" rel="noopener noreferrer"><i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i> Visit</a>' : '') +
+        '</div>';
+    });
+  }
+
+  function applyCodingProfiles(items) {
+    var grid = document.querySelector('.coding-grid');
+    if (!grid || !Array.isArray(items) || !items.length) return;
+    grid.innerHTML = items.map(function (c, i) {
+      return '<div class="coding-card animated-border reveal reveal-delay-' + ((i % 5) + 2) + '">' +
+        '<div class="cc-top"><div class="cc-img">' + imgOrPlaceholder(c.image, c.platform, c.icon || 'fas fa-code', c.platform) + '</div>' +
+        '<div class="cc-info"><h3>' + esc(c.platform) + '</h3><p>' + esc(c.title || '') + '</p>' +
+        (c.badge ? '<span class="cc-badge"><i class="fas fa-check-circle" aria-hidden="true"></i> ' + esc(c.badge) + '</span>' : '') +
+        '</div></div>' +
+        (c.stats ? '<div class="cc-tags"><span><i class="fas fa-chart-simple" aria-hidden="true"></i> ' + esc(c.stats) + '</span></div>' : '') +
+        (c.url ? '<a class="proj-link" href="' + esc(c.url) + '" target="_blank" rel="noopener noreferrer"><i class="fas fa-arrow-up-right-from-square" aria-hidden="true"></i> View Profile</a>' : '') +
+        '</div>';
+    }).join('');
+  }
+
+  function applyJourney(items) {
+    var wrap = document.querySelector('.journey-timeline');
+    if (!wrap || !Array.isArray(items) || !items.length) return;
+    wrap.innerHTML = '<div class="spine"></div>' + items.map(function (j, i) {
+      var tags = (Array.isArray(j.tagList) ? j.tagList : []).map(function (t, idx) {
+        return '<span' + (idx === 0 ? ' class="accent-tag"' : '') + '>' + esc(t) + '</span>';
+      }).join('');
+      return '<div class="j-item animated-border reveal reveal-delay-' + ((i % 5) + 1) + '">' +
+        '<div class="j-img">' + imgOrPlaceholder(j.image, j.title, 'fas fa-road', j.title) + '</div>' +
+        (j.year ? '<div class="j-year">' + esc(j.year) + '</div>' : '') +
+        '<h3>' + esc(j.title) + '</h3><p>' + esc(j.description) + '</p>' +
+        (tags ? '<div class="j-tags">' + tags + '</div>' : '') + '</div>';
+    }).join('');
+  }
+
+  function applyBlog(items) {
+    renderGrid('blogGrid', items, function (b, i, delay, hidden) {
+      var tags = (Array.isArray(b.tagList) ? b.tagList : []).map(function (t, idx) {
+        return '<span' + (idx === 0 ? ' class="accent-tag"' : '') + '>' + esc(t) + '</span>';
+      }).join('');
+      return '<div class="blog-card animated-border reveal ' + delay + hidden + '" data-index="' + i + '">' +
+        '<div class="blog-img">' + imgOrPlaceholder(b.image, b.title, 'fas fa-newspaper', b.title) + '</div>' +
+        (b.category ? '<div class="blog-cat">' + esc(b.category) + '</div>' : '') +
+        '<h3>' + esc(b.title) + '</h3><p>' + esc(b.excerpt || '') + '</p>' +
+        '<div class="blog-meta"><span>' + esc(b.date || '') + '</span><span>' + esc(b.readTime || '') + '</span></div>' +
+        (tags ? '<div class="blog-tags">' + tags + '</div>' : '') +
+        (b.url ? '<a class="proj-link" href="' + esc(b.url) + '" target="_blank" rel="noopener noreferrer"><i class="fas fa-book-open" aria-hidden="true"></i> Read Article</a>' : '') +
+        '</div>';
+    });
+  }
+
+  function applyClotheric(items) {
+    var grid = document.querySelector('#clotheric .grid-2');
+    if (!grid || !Array.isArray(items) || !items.length) return;
+    grid.innerHTML = items.map(function (c) {
+      return '<div class="card" style="padding:24px 28px;align-items:center;text-align:center;border-top:3px solid var(--accent);">' +
+        '<div style="font-size:2.4rem;color:var(--accent);margin-bottom:6px;"><i class="' + esc(c.icon || 'fas fa-shapes') + '" aria-hidden="true"></i></div>' +
+        '<h3 style="font-size:1rem;">' + esc(c.title) + '</h3>' +
+        '<p style="font-size:0.75rem;opacity:0.65;">' + esc(c.description) + '</p></div>';
+    }).join('');
+  }
+
+  // ---- Static text / labels -------------------------------------------------
+
+  // Section headings support a **highlight** convention: the marked part is
+  // wrapped in the site's gradient span, everything else is escaped.
+  function renderHeadingText(value) {
+    var safe = esc(value);
+    safe = safe.replace(/\*\*([^*]+)\*\*/g, '<span class="grad-text shimmer">$1</span>');
+    // `visible` is set inline: main.js attaches its IntersectionObserver to the
+    // headings that existed at load time, so a heading re-rendered here would
+    // never be observed and would stay at opacity:0.
+    return '<span class="text-reveal visible"><span class="line">' + safe + '</span></span>';
+  }
+
+  function applySiteText(items) {
+    if (!Array.isArray(items) || !items.length) return;
+    var map = {};
+    items.forEach(function (t) { if (t.key) map[t.key] = t.value; });
+
+    Object.keys(map).forEach(function (key) {
+      var value = map[key];
+      if (value === undefined || value === null || value === '') return;
+      var m = /^(.+)\.(eyebrow|heading)$/.exec(key);
+      if (!m) return;
+      var section = m[1];
+      if (m[2] === 'heading') {
+        var h = document.querySelector('#' + section + ' .section-h2');
+        if (h) h.innerHTML = renderHeadingText(value);
+      } else {
+        var e = document.querySelector('#' + section + ' .section-eyebrow');
+        if (e) {
+          var icon = e.querySelector('i');
+          var iconClass = icon ? icon.className : '';
+          e.innerHTML = (iconClass ? '<i class="' + esc(iconClass) + '" aria-hidden="true"></i> ' : '') + esc(value);
+        }
+      }
+    });
+  }
+
+  // ---- Special cards --------------------------------------------------------
+
+  function applyLinkedIn(li) {
+    if (!li) return;
+    var wrap = document.querySelector('#linkedin .linkedin-premium');
+    if (!wrap) return;
+
+    var avatar = wrap.querySelector('.li-avatar img');
+    if (avatar && li.avatar) avatar.src = li.avatar;
+
+    var h3 = wrap.querySelector('.li-user h3');
+    if (h3 && li.name) {
+      var html = esc(li.name) + '<span class="verified"><i class="fas fa-check-circle" aria-hidden="true"></i> Verified</span>';
+      if (li.openToWork !== false) html += '<span class="open-to-work"><i class="fas fa-briefcase" aria-hidden="true"></i> Open to Work</span>';
+      h3.innerHTML = html;
+    }
+
+    var headline = wrap.querySelector('.li-headline');
+    if (headline && li.headline) headline.textContent = li.headline;
+    var location = wrap.querySelector('.li-location');
+    if (location && li.location) location.textContent = li.location;
+
+    var nums = wrap.querySelectorAll('.li-stat-item .li-num');
+    if (nums[0] && li.connections) nums[0].textContent = li.connections;
+    if (nums[1] && li.recommendations) nums[1].textContent = li.recommendations;
+    if (nums[2] && li.posts) nums[2].textContent = li.posts;
+
+    if (li.url) {
+      Array.prototype.forEach.call(wrap.querySelectorAll('.li-btn'), function (a) { a.href = li.url; });
+    }
+  }
+
+  // Resume preview content (the CV download link itself is handled by
+  // applyResume above).
+  function applyResumeSection(res) {
+    if (!res) return;
+    var wrap = document.querySelector('#resume .resume-preview');
+    if (!wrap) return;
+    var cols = wrap.querySelectorAll('.rp-col');
+    var rows = function (list) {
+      return list.map(function (row) {
+        var label = row, value = '';
+        var parts = String(row == null ? '' : row).split('|');
+        label = parts[0];
+        value = (parts[1] || '').trim();
+        return '<div class="rp-item"><span class="rp-label">' + esc(label.trim()) + '</span><span class="rp-value">' + esc(value) + '</span></div>';
+      }).join('');
+    };
+    if (cols[0] && Array.isArray(res.educationList) && res.educationList.length) {
+      cols[0].innerHTML = '<h3>Education</h3>' + rows(res.educationList);
+    }
+    if (cols[1] && Array.isArray(res.coreSkills) && res.coreSkills.length) {
+      cols[1].innerHTML = '<h3>Core Skills</h3>' + rows(res.coreSkills);
+    }
+    if (res.intro) {
+      var p = wrap.querySelector('.rp-intro');
+      if (!p) {
+        p = document.createElement('p');
+        p.className = 'rp-intro';
+        p.style.cssText = 'text-align:center;opacity:0.6;font-size:0.8rem;margin-bottom:14px;font-family:var(--font-body);';
+        wrap.insertBefore(p, wrap.firstChild);
+      }
+      p.textContent = res.intro;
+    }
+    if (res.buttonUrl) {
+      Array.prototype.forEach.call(wrap.querySelectorAll('.rp-actions a'), function (a) { a.href = res.buttonUrl; });
+    }
+    if (res.buttonText) {
+      var glow = wrap.querySelector('.rp-actions .btn-glow');
+      if (glow) glow.innerHTML = '<i class="fas fa-download" aria-hidden="true"></i> ' + esc(res.buttonText);
+    }
+  }
+
   function applySocialAndContact(social, profile) {
     // Footer social icons.
     var footerSocial = document.querySelector('.footer-social');
@@ -565,6 +805,18 @@
     safeApply(applyAchievements, 'achievements', data.achievements);
     safeApply(applyTestimonials, 'testimonials', data.testimonials);
     safeApply(applySocialAndContact, 'socialAndContact', data['social-links'], data.profile);
+    safeApply(applySiteText, 'siteText', data['site-text']);
+    safeApply(applyWhyHire, 'whyHire', data['why-hire']);
+    safeApply(applyProcess, 'processSteps', data['process-steps']);
+    safeApply(applyFaq, 'faq', data.faq);
+    safeApply(applyJourney, 'journey', data.journey);
+    safeApply(applyBlog, 'blog', data.blog);
+    safeApply(applyCommunity, 'community', data.community);
+    safeApply(applyBeyond, 'beyondCode', data['beyond-code']);
+    safeApply(applyCodingProfiles, 'codingProfiles', data['coding-profiles']);
+    safeApply(applyClotheric, 'clotheric', data.clotheric);
+    safeApply(applyLinkedIn, 'linkedin', data.linkedin);
+    safeApply(applyResumeSection, 'resumeSection', data.resume);
     safeApply(applySeo, 'seo', data.seo);
   }
 

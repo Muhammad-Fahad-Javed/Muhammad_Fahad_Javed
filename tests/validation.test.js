@@ -155,7 +155,7 @@ test('A3: html flag is set on exactly the innerHTML-injected fields', () => {
   for (const def of Object.values(resources.COLLECTIONS)) {
     for (const field of def.fields) if (field.html === true) flagged.push(field.name);
   }
-  assert.deepEqual(flagged.sort(), ['heading', 'statusText']);
+  assert.deepEqual(flagged.sort(), ['answer', 'body', 'heading', 'statusText']);
 });
 
 test('A5: dialog-style quotes in labels cannot break out of an attribute', () => {

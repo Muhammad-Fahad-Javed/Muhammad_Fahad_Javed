@@ -29,6 +29,11 @@
         // ═══════════════════════════════════════════════════════════════
         (function() {
             document.querySelectorAll('.text-reveal').forEach(el => {
+                // Never re-split markup that already carries authored line
+                // spans. Rebuilding from textContent threw away the nested
+                // <span class="grad-text"> highlight and flattened every
+                // heading to plain text.
+                if (el.querySelector('.line')) return;
                 const text = el.textContent;
                 const words = text.split(' ');
                 const lines = [];
