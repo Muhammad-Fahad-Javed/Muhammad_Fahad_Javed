@@ -17,10 +17,13 @@
   var ENDPOINT = '/api/public/content';
   var TIMEOUT_MS = 6000;
 
+  // Escapes for BOTH text and attribute positions (quotes included). Mirrors
+  // the admin UI's UI.escapeHtml; without the quote replacement a value could
+  // close an attribute it is interpolated into.
   function esc(str) {
     var div = document.createElement('div');
     div.textContent = str == null ? '' : String(str);
-    return div.innerHTML;
+    return div.innerHTML.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
   // CMS text fields are free-form and often contain doubled or trailing
@@ -176,13 +179,20 @@
 
       var heading = wrap.querySelector('h2');
       if (heading && about.heading) {
-        if (about.heading.indexOf('<') !== -1) {
-          heading.innerHTML = about.heading;
-        } else if (about.heading.indexOf('&') !== -1) {
-          var parts = about.heading.split('&');
-          heading.innerHTML = esc(parts[0]) + '<span class="highlight">&amp; ' + esc(parts.slice(1).join('&').trim()) + '</span>';
+        // `about.heading` is sanitised HTML produced by the server (it is
+        // declared `html: true` in lib/resources.js), so injecting it is safe.
+        // Site convention: everything after the first ampersand is emphasised.
+        // The server escapes a literal "&" to "&amp;", so match the entity.
+        var raw = String(about.heading);
+        var amp = raw.indexOf('&');
+        if (amp !== -1) {
+          var entity = raw.slice(amp).match(/^&(?:amp;)?\s*/);
+          var after = raw.slice(amp + (entity ? entity[0].length : 1));
+          heading.innerHTML = raw.slice(0, amp) + '<span class="highlight">&amp; ' + after + '</span>';
+        } else if (raw.indexOf('<') !== -1) {
+          heading.innerHTML = raw;
         } else {
-          heading.textContent = about.heading;
+          heading.textContent = raw;
         }
       }
 
@@ -333,8 +343,15 @@
       return '<div class="img-placeholder"><i class="' + esc(iconClass) + '" aria-hidden="true"></i>' +
         '<span class="placeholder-label">' + esc(label) + '</span></div>';
     }
+    // The onerror handler is a fixed string: it rebuilds the placeholder from
+    // the element's own data-* attributes rather than interpolating CMS values
+    // into JavaScript, which removes that injection path entirely.
     return '<img src="' + esc(src) + '" alt="' + esc(alt) + '" loading="lazy" decoding="async" width="600" height="375" ' +
-      "onerror=\"this.onerror=null;this.parentElement.innerHTML='<div class=img-placeholder><i class=\\'" + esc(iconClass) + "\\'></i><span class=placeholder-label>" + esc(label) + "</span></div>'\">";
+      'data-fallback-icon="' + esc(iconClass) + '" data-fallback-label="' + esc(label) + '" ' +
+      "onerror=\"this.onerror=null;var d=document.createElement('div');d.className='img-placeholder';" +
+      "var i=document.createElement('i');i.className=this.dataset.fallbackIcon||'fas fa-image';i.setAttribute('aria-hidden','true');" +
+      "var s=document.createElement('span');s.className='placeholder-label';s.textContent=this.dataset.fallbackLabel||'';" +
+      "d.appendChild(i);d.appendChild(s);this.parentElement.replaceChildren(d);\">";
   }
 
   function applyProjects(projects) {

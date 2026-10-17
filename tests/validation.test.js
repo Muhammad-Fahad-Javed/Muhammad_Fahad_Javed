@@ -125,6 +125,39 @@ test('A3: HTML-bearing JSON arrays are sanitised; structured entries are preserv
   assert.match(tags[0].label, /Dev/);
 });
 
+test('A3: fields the public client renders as HTML are sanitised server-side', () => {
+  // hero.statusText and about.heading are injected via innerHTML by the public
+  // client (frontend/js/content-loader.js), so they carry `html: true` and must
+  // be sanitised on write exactly like richtext fields. Without this, an author
+  // could store markup that executes for every visitor (confirmed in a browser).
+  const hero = resources.buildWriteData(
+    { statusText: '<strong>Open</strong><script>alert(1)</script><img src=x onerror=alert(1)>' },
+    heroDef
+  );
+  assert.match(hero.statusText, /<strong>Open<\/strong>/);
+  assert.ok(!/script/i.test(hero.statusText), hero.statusText);
+  assert.ok(!/onerror/i.test(hero.statusText), hero.statusText);
+
+  const about = resources.buildWriteData(
+    { heading: 'Software Engineer & Full Stack <img src=x onerror=alert(1)>' },
+    aboutDef
+  );
+  assert.ok(!/onerror/i.test(about.heading), about.heading);
+  // A literal ampersand becomes an entity; the client handles both forms.
+  assert.match(about.heading, /&amp;/);
+});
+
+test('A3: html flag is set on exactly the innerHTML-injected fields', () => {
+  const flagged = [];
+  for (const def of Object.values(resources.SINGLETONS)) {
+    for (const field of def.fields) if (field.html === true) flagged.push(field.name);
+  }
+  for (const def of Object.values(resources.COLLECTIONS)) {
+    for (const field of def.fields) if (field.html === true) flagged.push(field.name);
+  }
+  assert.deepEqual(flagged.sort(), ['heading', 'statusText']);
+});
+
 test('A5: dialog-style quotes in labels cannot break out of an attribute', () => {
   // buildWriteData for a plain text field keeps the raw text (it is rendered
   // via textContent in the UI), but the client escapeHtml helper escapes
