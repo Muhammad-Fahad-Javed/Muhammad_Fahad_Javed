@@ -26,6 +26,13 @@
     var label = document.createElement('label');
     label.textContent = field.label + (field.required ? ' *' : '');
     wrap.appendChild(label);
+    if (field.hint) {
+      var hint = document.createElement('div');
+      hint.className = 'hint';
+      hint.style.margin = '0 0 6px';
+      hint.textContent = field.hint;
+      wrap.appendChild(hint);
+    }
     return wrap;
   }
 

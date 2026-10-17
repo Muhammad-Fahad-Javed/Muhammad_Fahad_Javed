@@ -35,6 +35,7 @@ function serializeField(field, indent) {
   ];
   if (field.required) parts.push('required: true');
   if (field.placeholder) parts.push(`placeholder: ${JSON.stringify(field.placeholder)}`);
+  if (field.hint) parts.push(`hint: ${JSON.stringify(field.hint)}`);
   if (field.min !== undefined) parts.push(`min: ${field.min}`);
   if (field.max !== undefined) parts.push(`max: ${field.max}`);
   return `${pad}{ ${parts.join(', ')} },`;
