@@ -592,13 +592,14 @@
 
   // Section headings support a **highlight** convention: the marked part is
   // wrapped in the site's gradient span, everything else is escaped.
+  //
+  // The markup matches what the page was hand-written with, so main.js reveals
+  // it exactly like a static heading (it loads after this content is applied,
+  // so its scroll-reveal observer sees these elements).
   function renderHeadingText(value) {
     var safe = esc(value);
     safe = safe.replace(/\*\*([^*]+)\*\*/g, '<span class="grad-text shimmer">$1</span>');
-    // `visible` is set inline: main.js attaches its IntersectionObserver to the
-    // headings that existed at load time, so a heading re-rendered here would
-    // never be observed and would stay at opacity:0.
-    return '<span class="text-reveal visible"><span class="line">' + safe + '</span></span>';
+    return '<span class="text-reveal"><span class="line">' + safe + '</span></span>';
   }
 
   function applySiteText(items) {
