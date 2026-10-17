@@ -166,6 +166,21 @@
         }
       }
     }
+
+    // Head photo. The hero background is a CSS default (images/hero.jpg); when
+    // the CMS supplies Hero Image (or, failing that, the Profile Image) prefer
+    // it, so the head photo can be changed from the admin. The image is
+    // preloaded first so a missing/removed file never blanks the hero.
+    var heroPhoto = (hero && hero.heroImage) || (profile && profile.profileImage);
+    var heroBg = document.querySelector('.hero-photo-bg');
+    if (heroBg && heroPhoto) {
+      var heroPreload = new Image();
+      heroPreload.onload = function () {
+        heroBg.style.backgroundImage = 'url(' + JSON.stringify(String(heroPhoto)) + ')';
+        heroBg.classList.add('has-custom-photo');
+      };
+      heroPreload.src = heroPhoto;
+    }
   }
 
   // ---- ABOUT & PROFILE ---------------------------------------------------
