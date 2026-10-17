@@ -1,76 +1,4 @@
         // ═══════════════════════════════════════════════════════════════
-        // CUSTOM CURSOR — subtle desktop only
-        // ═══════════════════════════════════════════════════════════════
-        (function() {
-            const cursor = document.getElementById('customCursor');
-            const ring = document.getElementById('cursorRing');
-            if (!cursor || !ring) return;
-
-            let mouseX = -100,
-                mouseY = -100;
-            let cursorX = -100,
-                cursorY = -100;
-            let ringX = -100,
-                ringY = -100;
-            let isVisible = false;
-
-            if (window.matchMedia('(pointer: fine)').matches) {
-                document.addEventListener('mousemove', (e) => {
-                    mouseX = e.clientX;
-                    mouseY = e.clientY;
-                    if (!isVisible) {
-                        isVisible = true;
-                        cursor.classList.add('visible');
-                        ring.classList.add('visible');
-                    }
-                });
-
-                document.addEventListener('mouseleave', () => {
-                    isVisible = false;
-                    cursor.classList.remove('visible');
-                    ring.classList.remove('visible');
-                });
-
-                const interactive = document.querySelectorAll('a, button, .btn-glow, .btn-ghost, .project-card, .why-card, .service-card, .cert-card, .blog-card, .gh-repo-card, .exp-card, .coding-card, .beyond-card, .testimonial-card, .community-card, .faq-item, .detail-close, .nav-toggle, .nav-cv-btn, .show-more-btn, .proj-link, .repo-link, .li-btn, .otw-btn, .back-top');
-                interactive.forEach(el => {
-                    el.addEventListener('mouseenter', () => {
-                        if (el.closest('a') || el.closest('button') || el.classList.contains('btn-glow') ||
-                            el.classList.contains('btn-ghost') || el.classList.contains('li-btn') ||
-                            el.classList.contains('proj-link') || el.classList.contains('repo-link') ||
-                            el.classList.contains('nav-cv-btn') || el.classList.contains('show-more-btn') ||
-                            el.classList.contains('otw-btn') || el.classList.contains('back-top')) {
-                            cursor.classList.add('hover');
-                            ring.classList.add('hover');
-                        } else {
-                            cursor.classList.add('hover-ring');
-                            ring.classList.add('hover');
-                        }
-                    });
-                    el.addEventListener('mouseleave', () => {
-                        cursor.classList.remove('hover', 'hover-ring');
-                        ring.classList.remove('hover');
-                    });
-                });
-
-                function animateCursor() {
-                    cursorX += (mouseX - cursorX) * 0.15;
-                    cursorY += (mouseY - cursorY) * 0.15;
-                    ringX += (mouseX - ringX) * 0.08;
-                    ringY += (mouseY - ringY) * 0.08;
-
-                    if (isVisible) {
-                        cursor.style.transform =
-                            `translate(${cursorX - cursor.offsetWidth/2}px, ${cursorY - cursor.offsetHeight/2}px)`;
-                        ring.style.transform =
-                            `translate(${ringX - ring.offsetWidth/2}px, ${ringY - ring.offsetHeight/2}px)`;
-                    }
-                    requestAnimationFrame(animateCursor);
-                }
-                animateCursor();
-            }
-        })();
-
-        // ═══════════════════════════════════════════════════════════════
         // SCROLL-REACTIVE ANIMATED BORDER
         // ═══════════════════════════════════════════════════════════════
         (function() {
@@ -128,41 +56,6 @@
                 });
             }, { threshold: 0.2 });
             textReveals.forEach(el => observer.observe(el));
-        })();
-
-        // ═══════════════════════════════════════════════════════════════
-        // MAGNETIC BUTTONS
-        // ═══════════════════════════════════════════════════════════════
-        (function() {
-            const magnets = document.querySelectorAll('.magnetic-wrap');
-            magnets.forEach(wrap => {
-                const btn = wrap.querySelector('a, button');
-                if (!btn) return;
-
-                wrap.addEventListener('mousemove', (e) => {
-                    const rect = wrap.getBoundingClientRect();
-                    const x = e.clientX - rect.left - rect.width / 2;
-                    const y = e.clientY - rect.top - rect.height / 2;
-                    const dist = Math.sqrt(x * x + y * y);
-                    const maxDist = 150;
-                    if (dist < maxDist) {
-                        const strength = 1 - dist / maxDist;
-                        const moveX = x * strength * 0.08;
-                        const moveY = y * strength * 0.08;
-                        btn.style.transform = `translate(${moveX}px, ${moveY}px)`;
-                    } else {
-                        btn.style.transform = '';
-                    }
-                });
-
-                wrap.addEventListener('mouseleave', () => {
-                    btn.style.transform = '';
-                    btn.style.transition = 'transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1)';
-                    setTimeout(() => {
-                        btn.style.transition = '';
-                    }, 300);
-                });
-            });
         })();
 
         // ═══════════════════════════════════════════════════════════════
@@ -232,37 +125,6 @@
                 requestAnimationFrame(animate);
             }
             animate();
-        })();
-
-        // ═══════════════════════════════════════════════════════════════
-        // HERO — REFRACTION PLATE MOUSE TRACKING
-        // ═══════════════════════════════════════════════════════════════
-        (function() {
-            const plate = document.querySelector(".refraction-plate");
-            if (!plate) return;
-
-            let currentX = 0,
-                currentY = 0;
-            let targetX = 0,
-                targetY = 0;
-
-            document.addEventListener("mousemove", (e) => {
-                targetX = (e.clientX / window.innerWidth - 0.5) * 16;
-                targetY = (e.clientY / window.innerHeight - 0.5) * 16;
-            });
-
-            function smoothFollow() {
-                currentX += (targetX - currentX) * 0.08;
-                currentY += (targetY - currentY) * 0.08;
-                plate.style.transform = `rotateX(${-currentY}deg) rotateY(${currentX}deg)`;
-                requestAnimationFrame(smoothFollow);
-            }
-            smoothFollow();
-
-            document.addEventListener("mouseleave", () => {
-                targetX = 0;
-                targetY = 0;
-            });
         })();
 
         // ═══════════════════════════════════════════════════════════════
@@ -1233,8 +1095,6 @@
 
         console.log('🚀 Premium Portfolio Upgrade Complete');
         console.log('✅ Animated borders on cards (scroll-triggered)');
-        console.log('✅ Custom cursor (subtle, desktop only)');
-        console.log('✅ Magnetic buttons on CTAs');
         console.log('✅ Text reveal animations');
         console.log('✅ Cinematic hero with parallax and depth');
         console.log('✅ Scroll progress indicator');

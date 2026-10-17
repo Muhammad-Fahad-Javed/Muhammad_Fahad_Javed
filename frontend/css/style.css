@@ -50,8 +50,6 @@
             --nav-text: #6C6156;
             --nav-hover: #3E2B1E;
             --banner-height: 0px;
-            --cursor-size: 8px;
-            --cursor-ring-size: 36px;
         }
 
         /* ─── RESET ─── */
@@ -75,13 +73,6 @@
             overflow-x: hidden;
             line-height: 1.6;
             min-height: 100vh;
-            cursor: none;
-        }
-
-        @media (pointer: coarse) {
-            body {
-                cursor: auto;
-            }
         }
 
         ::selection {
@@ -122,13 +113,6 @@
                 transition: none !important;
                 scroll-behavior: auto !important;
             }
-            body {
-                cursor: auto !important;
-            }
-            .custom-cursor,
-            .cursor-ring {
-                display: none !important;
-            }
             .animated-border {
                 animation: none !important;
                 opacity: 0.3 !important;
@@ -136,81 +120,6 @@
             .animated-border::before {
                 animation: none !important;
                 opacity: 0.15 !important;
-            }
-        }
-
-        /* ═══════════════════════════════════════════════════════════════
-           CUSTOM CURSOR
-           ═══════════════════════════════════════════════════════════════ */
-        @media (pointer: fine) {
-            .custom-cursor {
-                position: fixed;
-                pointer-events: none;
-                z-index: 99999;
-                top: 0;
-                left: 0;
-                width: var(--cursor-size);
-                height: var(--cursor-size);
-                background: var(--accent);
-                border-radius: 50%;
-                transform: translate(-50%, -50%);
-                transition: width 0.15s ease, height 0.15s ease, background 0.2s ease, opacity 0.2s ease;
-                opacity: 0;
-                will-change: transform, width, height;
-                mix-blend-mode: difference;
-            }
-
-            .custom-cursor.visible {
-                opacity: 1;
-            }
-
-            .custom-cursor.hover {
-                width: calc(var(--cursor-size) * 2.5);
-                height: calc(var(--cursor-size) * 2.5);
-                background: transparent;
-                border: 2px solid var(--accent);
-                mix-blend-mode: normal;
-            }
-
-            .custom-cursor.hover-ring {
-                width: calc(var(--cursor-size) * 4);
-                height: calc(var(--cursor-size) * 4);
-                background: transparent;
-                border: 1.5px solid rgba(90, 59, 34, 0.15);
-                mix-blend-mode: normal;
-            }
-
-            .cursor-ring {
-                position: fixed;
-                pointer-events: none;
-                z-index: 99998;
-                top: 0;
-                left: 0;
-                width: var(--cursor-ring-size);
-                height: var(--cursor-ring-size);
-                border: 1px solid rgba(90, 59, 34, 0.1);
-                border-radius: 50%;
-                transform: translate(-50%, -50%);
-                transition: width 0.3s ease, height 0.3s ease, border-color 0.3s ease, opacity 0.3s ease;
-                opacity: 0;
-                will-change: transform, width, height;
-            }
-
-            .cursor-ring.visible {
-                opacity: 1;
-            }
-
-            .cursor-ring.hover {
-                width: calc(var(--cursor-ring-size) * 1.6);
-                height: calc(var(--cursor-ring-size) * 1.6);
-                border-color: var(--accent);
-            }
-        }
-
-        @media (pointer: coarse) {
-            .custom-cursor,
-            .cursor-ring {
-                display: none !important;
             }
         }
 
