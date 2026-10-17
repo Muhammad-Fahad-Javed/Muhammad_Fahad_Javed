@@ -7,6 +7,18 @@
   // Field rendering (generic form engine)
   // ---------------------------------------------------------------------
 
+  function coerceBoolean(value, fallback) {
+    if (value === undefined || value === null || value === '') return fallback;
+    if (typeof value === 'boolean') return value;
+    if (typeof value === 'number') return value !== 0;
+    if (typeof value === 'string') {
+      var normalized = value.trim().toLowerCase();
+      if (['true', '1', 'yes', 'y', 'on'].indexOf(normalized) !== -1) return true;
+      if (['false', '0', 'no', 'n', 'off'].indexOf(normalized) !== -1) return false;
+    }
+    return !!value;
+  }
+
   function fieldWrapper(field) {
     var wrap = document.createElement('div');
     wrap.className = 'form-field';
@@ -32,7 +44,7 @@
       cwrap.className = 'checkbox-field';
       var cb = document.createElement('input');
       cb.type = 'checkbox';
-      cb.checked = !!value;
+      cb.checked = coerceBoolean(value, false);
       var span = document.createElement('span');
       span.textContent = field.label;
       cwrap.appendChild(cb);

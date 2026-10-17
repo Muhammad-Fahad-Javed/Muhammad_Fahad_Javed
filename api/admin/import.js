@@ -1,7 +1,7 @@
 const prisma = require('../../lib/db');
 const { requireAuth } = require('../../lib/auth');
 const { getJsonBody, methodNotAllowed } = require('../../lib/http');
-const { COLLECTIONS, SINGLETONS, serializePayload } = require('../../lib/resources');
+const { COLLECTIONS, SINGLETONS, coerceBoolean, serializePayload } = require('../../lib/resources');
 
 // Import is additive/upsert-only by design (section 29 of the brief:
 // "do not make destructive changes to existing data"). Rows whose id is
@@ -25,8 +25,8 @@ module.exports = requireAuth(async (req, res) => {
     let updated = 0;
     for (const row of rows) {
       const data = serializePayload(row, def);
-      if (def.publishField && row[def.publishField] !== undefined) data[def.publishField] = !!row[def.publishField];
-      if (def.featuredField && row[def.featuredField] !== undefined) data[def.featuredField] = !!row[def.featuredField];
+      if (def.publishField && row[def.publishField] !== undefined) data[def.publishField] = coerceBoolean(row[def.publishField], false);
+      if (def.featuredField && row[def.featuredField] !== undefined) data[def.featuredField] = coerceBoolean(row[def.featuredField], false);
       if (typeof row.order === 'number') data.order = row.order;
 
       if (row.id) {

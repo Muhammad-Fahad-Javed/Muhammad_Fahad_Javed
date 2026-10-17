@@ -1,7 +1,7 @@
 const prisma = require('../../../lib/db');
 const { requireAuth } = require('../../../lib/auth');
 const { getJsonBody, methodNotAllowed } = require('../../../lib/http');
-const { COLLECTIONS, deserializeRow, serializePayload, validatePayload } = require('../../../lib/resources');
+const { COLLECTIONS, coerceBoolean, deserializeRow, serializePayload, validatePayload } = require('../../../lib/resources');
 const { sanitizeHtml } = require('../../../lib/sanitize');
 
 module.exports = requireAuth(async (req, res) => {
@@ -36,10 +36,10 @@ module.exports = requireAuth(async (req, res) => {
       }
 
       if (def.publishField && !(def.publishField in data)) {
-        data[def.publishField] = body[def.publishField] !== undefined ? !!body[def.publishField] : true;
+        data[def.publishField] = body[def.publishField] !== undefined ? coerceBoolean(body[def.publishField], false) : true;
       }
       if (def.featuredField && !(def.featuredField in data)) {
-        data[def.featuredField] = !!body[def.featuredField];
+        data[def.featuredField] = coerceBoolean(body[def.featuredField], false);
       }
 
       const count = await model.count();

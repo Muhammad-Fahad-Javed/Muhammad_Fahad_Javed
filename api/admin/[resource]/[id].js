@@ -1,7 +1,7 @@
 const prisma = require('../../../lib/db');
 const { requireAuth } = require('../../../lib/auth');
 const { getJsonBody, methodNotAllowed } = require('../../../lib/http');
-const { COLLECTIONS, deserializeRow, serializePayload, validatePayload } = require('../../../lib/resources');
+const { COLLECTIONS, coerceBoolean, deserializeRow, serializePayload, validatePayload } = require('../../../lib/resources');
 const { sanitizeHtml } = require('../../../lib/sanitize');
 const { deleteFile } = require('../../../lib/storage');
 
@@ -44,8 +44,8 @@ module.exports = requireAuth(async (req, res) => {
           data[field.name] = sanitizeHtml(data[field.name]);
         }
       }
-      if (def.publishField && def.publishField in body) data[def.publishField] = !!body[def.publishField];
-      if (def.featuredField && def.featuredField in body) data[def.featuredField] = !!body[def.featuredField];
+      if (def.publishField && def.publishField in body) data[def.publishField] = coerceBoolean(body[def.publishField], false);
+      if (def.featuredField && def.featuredField in body) data[def.featuredField] = coerceBoolean(body[def.featuredField], false);
       if (typeof body.order === 'number') data.order = body.order;
 
       const updated = await model.update({ where: { id }, data });
