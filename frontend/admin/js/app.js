@@ -331,8 +331,12 @@
         '<div class="panel"><div class="panel-header"><h2>Quick actions</h2></div><div class="panel-body" style="display:flex;gap:10px;flex-wrap:wrap;">' +
         '<a class="btn btn-primary" href="#/collection/projects/new"><i class="fas fa-plus"></i> Add Project</a>' +
         '<a class="btn btn-primary" href="#/collection/certificates/new"><i class="fas fa-plus"></i> Add Certificate</a>' +
+        '<a class="btn btn-primary" href="#/collection/blog/new"><i class="fas fa-plus"></i> Add Blog Post</a>' +
         '<a class="btn" href="#/singleton/about"><i class="fas fa-user"></i> Edit About</a>' +
+        '<a class="btn" href="#/collection/site-text"><i class="fas fa-font"></i> Edit Headings</a>' +
+        '<a class="btn" href="#/singleton/hero"><i class="fas fa-house"></i> Edit Hero</a>' +
         '<a class="btn" href="#/singleton/seo"><i class="fas fa-magnifying-glass-chart"></i> Edit SEO</a>' +
+        '<a class="btn" href="#/media"><i class="fas fa-images"></i> Media</a>' +
         '<a class="btn" href="/api/admin/export" target="_blank"><i class="fas fa-download"></i> Export Backup</a>' +
         '</div></div>';
     } catch (err) {
@@ -634,10 +638,38 @@
 
     sidebarNavEl.innerHTML = groups.map(function (g) {
       var items = g.items.map(function (item) {
-        return '<a href="' + item.href + '"><i class="' + item.icon + '" aria-hidden="true"></i> ' + item.label + '</a>';
+        return '<a href="' + item.href + '" data-search="' + UI.escapeHtml(g.label + ' ' + item.label).toLowerCase() + '">' +
+          '<i class="' + item.icon + '" aria-hidden="true"></i> <span>' + UI.escapeHtml(item.label) + '</span></a>';
       }).join('');
-      return '<div class="nav-group-label">' + g.label + '</div>' + items;
-    }).join('');
+      return '<div class="nav-group"><div class="nav-group-label">' + UI.escapeHtml(g.label) + '</div>' + items + '</div>';
+    }).join('') + '<div class="nav-empty" id="navEmpty" style="display:none;">No matching sections.</div>';
+
+    bindNavFilter();
+  }
+
+  // The sidebar lists every singleton and collection (30+ entries), so it gets
+  // a plain substring filter. Items are matched on "group label + item label",
+  // which means typing "settings" or "media" works as well as a section name.
+  function bindNavFilter() {
+    var filter = document.getElementById('navFilter');
+    if (!filter || filter.dataset.bound) return;
+    filter.dataset.bound = '1';
+    filter.addEventListener('input', function () {
+      var q = filter.value.trim().toLowerCase();
+      var anyVisible = false;
+      sidebarNavEl.querySelectorAll('.nav-group').forEach(function (group) {
+        var groupHasMatch = false;
+        group.querySelectorAll('a').forEach(function (a) {
+          var match = !q || (a.getAttribute('data-search') || '').indexOf(q) !== -1;
+          a.style.display = match ? '' : 'none';
+          if (match) groupHasMatch = true;
+        });
+        group.style.display = groupHasMatch ? '' : 'none';
+        if (groupHasMatch) anyVisible = true;
+      });
+      var empty = document.getElementById('navEmpty');
+      if (empty) empty.style.display = anyVisible ? 'none' : '';
+    });
   }
 
   // ---------------------------------------------------------------------
