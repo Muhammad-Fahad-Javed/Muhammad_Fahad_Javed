@@ -15,7 +15,7 @@
 const collections = {
   'why-hire': [
     { icon: 'fas fa-puzzle-piece', title: 'Problem Solving', description: 'I break down complex challenges into elegant, scalable solutions. Every problem is an opportunity to build something better.' },
-    { icon: 'fas fa-sitemap', title: 'Clean Architecture', description: 'I write code that is maintainable, testable, and well-structured. I follow SOLID principles and design patterns religiously.' },
+    { icon: 'fas fa-sitemap', title: 'Clean Architecture', description: 'I write code that is maintainable, testable, and well-structured. I follow SOLID principles and proven design patterns rigorously.' },
     { icon: 'fas fa-gauge-high', title: 'Performance Focus', description: 'I optimize for speed, memory efficiency, and responsiveness. I understand the cost of every byte and every cycle.' },
     { icon: 'fas fa-brain', title: 'Fast Learning', description: 'I adapt quickly to new technologies and paradigms. I thrive on continuous learning and exploring the cutting edge.' },
     { icon: 'fas fa-paint-brush', title: 'UI/UX Thinking', description: 'I build with the user in mind. Clean interfaces, thoughtful interactions, and experiences that feel natural and intuitive.' },
@@ -24,15 +24,15 @@ const collections = {
 
   'process-steps': [
     { icon: 'fas fa-magnifying-glass', title: 'Research', description: 'Understand the problem deeply' },
-    { icon: 'fas fa-pen-ruler', title: 'Planning', description: 'Design architecture & flow' },
-    { icon: 'fas fa-paintbrush', title: 'Design', description: 'UI/UX & system design' },
+    { icon: 'fas fa-pen-ruler', title: 'Planning', description: 'Design architecture and flow' },
+    { icon: 'fas fa-paintbrush', title: 'Design', description: 'UI/UX and system design' },
     { icon: 'fas fa-code', title: 'Develop', description: 'Write clean, testable code' },
     { icon: 'fas fa-vial', title: 'Testing', description: 'Rigorous quality assurance' },
     { icon: 'fas fa-rocket', title: 'Deploy', description: 'Ship with confidence' },
   ],
 
   faq: [
-    { question: 'Who is Muhammad Fahad Javed?', answer: "I'm Muhammad Fahad Javed — also known as Fahad Javed or FJ — a Computer Science student at FAST-NUCES, Multan. I specialize in C++ systems development, OOP, full-stack web development, and building products that solve real problems." },
+    { question: 'Who is Muhammad Fahad Javed?', answer: "I'm Muhammad Fahad Javed — also known as Fahad Javed or FJ — a Computer Science student at FAST-NUCES, Multan. I specialize in C++ systems development, object-oriented programming, full-stack web development, and building products that solve real problems." },
     { question: 'Are you available for internships?', answer: "Yes! I'm actively looking for internships and entry-level positions where I can apply my skills and grow as an engineer. I'm open to remote, hybrid, and on-site roles." },
     { question: 'What technologies are you currently learning?', answer: "I'm currently exploring AI/ML fundamentals, advanced C++ features, and full-stack web development with React and Node.js. I also contribute to open-source projects in my free time." },
     { question: 'Do you work on open-source projects?', answer: "Absolutely! I believe in giving back to the community. I maintain several C++ libraries and educational projects on GitHub. Check out my repositories to see what I'm building." },
@@ -71,12 +71,12 @@ const collections = {
 
   'coding-profiles': [
     { platform: 'LeetCode', title: 'Data Structures & Algorithms practice', icon: 'fas fa-code', image: '/leetcode-logo.png', url: '', badge: 'Active', stats: '48 solved · 15-day streak · 3 badges' },
-    { platform: 'HackerRank', title: 'Building problem-solving skills in C++ & algorithms', icon: 'fab fa-hackerrank', image: '/hackerrank-logo.png', url: '', badge: 'Active', stats: '32 solved · 5 stars · 3 badges' },
+    { platform: 'HackerRank', title: 'Building problem-solving skills in C++ and algorithms', icon: 'fab fa-hackerrank', image: '/hackerrank-logo.png', url: '', badge: 'Active', stats: '32 solved · 5 stars · 3 badges' },
   ],
 
   clotheric: [
     { icon: 'fas fa-laptop-code', title: 'Platform Architecture', description: 'Scalable full stack architecture designed for growth, with modular components and clean separation of concerns.', tagList: ['React', 'Node.js', 'PostgreSQL'] },
-    { icon: 'fas fa-users-cog', title: 'Product Strategy', description: 'From market research to MVP launch defining product vision, user flows, and go to-market strategy.', tagList: ['MVP', 'UX Research', 'Growth'] },
+    { icon: 'fas fa-users-cog', title: 'Product Strategy', description: 'From market research to MVP launch, defining product vision, user flows, and go-to-market strategy.', tagList: ['MVP', 'UX Research', 'Growth'] },
   ],
 
   // Every section of the public page, in page order. Switch one off to take the
@@ -169,8 +169,8 @@ const singletons = {
   },
   resume: {
     intro: '',
-    educationList: ['BS Computer Science | FAST-NUCES, 2029', 'Intermediate (ICS) | KIPS College, 2024', 'Matriculation | Govt. High School, 2022'],
-    coreSkills: ['Languages | C++, Python, JS, Java', 'Concepts | OOP, DSA, Memory Mgmt', 'Tools | Git, Linux, SQL, SFML'],
+    educationList: ['BS Computer Science | FAST-NUCES, 2029', 'Intermediate (ICS) | KIPS College, 2024', 'Matriculation | Government Model High School, 2022'],
+    coreSkills: ['Languages | C++, Python, JavaScript, Java', 'Concepts | OOP, DSA, Memory Management', 'Tools | Git, Linux, SQL, SFML'],
     buttonText: 'Download PDF',
     buttonUrl: '/resume.pdf',
   },

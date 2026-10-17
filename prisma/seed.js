@@ -90,8 +90,8 @@ async function main() {
     update: {},
     create: {
       id: 'singleton',
-      heading: 'FAHAD JAVED - CS Student & Developer',
-      name: 'FAHAD JAVED - CS Student & Developer',
+      heading: 'FAHAD JAVED — Computer Science Student & Developer',
+      name: 'FAHAD JAVED — Computer Science Student & Developer',
       typedRoles: JSON.stringify(['Software Engineer', 'C++ Developer', 'Full Stack Developer', 'Systems Thinker']),
       subtitle: '',
       description: '',
@@ -115,7 +115,7 @@ async function main() {
       heading: 'Software Engineer & Full Stack Developer',
       subheading: 'Muhammad Fahad Javed (FJ)',
       paragraphs: JSON.stringify([
-        "I'm <strong>Muhammad Fahad Javed</strong> — known as <strong>Fahad Javed</strong> or <strong>FJ</strong> — a Computer Science student at <strong>FAST – National University of Computer and Emerging Sciences (FAST-NUCES), Multan Campus</strong>, with a passion for software engineering and building technology that solves real world problems.",
+        "I'm <strong>Muhammad Fahad Javed</strong> — known as <strong>Fahad Javed</strong> or <strong>FJ</strong> — a Computer Science student at <strong>FAST – National University of Computer and Emerging Sciences (FAST-NUCES), Multan Campus</strong>, with a passion for software engineering and building technology that solves real-world problems.",
         'My programming journey began during my <strong>Intermediate (ICS)</strong> studies, where I discovered the excitement of transforming ideas into practical software using <strong>C++</strong> and <strong>Object-Oriented Programming</strong>. Since then, I have continuously strengthened my skills through hands-on projects, self-directed learning, and a commitment to continuous improvement.',
         'I specialize in <strong>C++</strong>, <strong>full-stack web development</strong>, and designing modern digital solutions. I believe software should do more than function — it should solve meaningful problems, improve everyday experiences, and create lasting value for its users.',
         'I approach every project with a focus on clean architecture, performance, and user experience while constantly exploring new technologies and best practices. Curiosity, consistency, and lifelong learning are the principles that drive my growth as a developer.',
@@ -311,7 +311,7 @@ async function main() {
 
   // ---- Services ----
   const services = [
-    ['C++ Systems Development', 'Build robust console applications, libraries, and system tools with clean OOP architecture and efficient memory management.', 'fas fa-code', '/service-cpp.jpg', 'from $20'],
+    ['C++ Systems Development', 'Build robust console applications, libraries, and system tools with clean OOP architecture and efficient memory management.', 'fas fa-code', '/service-cpp.jpg', 'From $20'],
     ['Technical Tutoring', 'One-on-one tutoring for C++, OOP, Data Structures, and Algorithms. Clear explanations with practical examples.', 'fas fa-chalkboard-teacher', '/service-tutoring.jpg', '$10/hr'],
     ['Systems Architecture', 'Design scalable, maintainable software architectures. From console apps to full system design with separation of concerns.', 'fas fa-sitemap', '/service-arch.jpg', 'Consulting'],
     ['AI Consulting', 'Advise on integrating AI models into existing systems. Research-focused approach to intelligent system design.', 'fas fa-robot', '/service-ai.jpg', 'Research'],
