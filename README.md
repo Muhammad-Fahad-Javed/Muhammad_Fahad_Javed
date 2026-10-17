@@ -43,6 +43,35 @@ python3 -m http.server 8000      # then open http://localhost:8000
 
 ### Full local run (frontend + admin/API)
 
+**Option A — no Vercel account and no database needed (recommended):**
+
+```bash
+npm install
+npm run dev:local
+```
+
+That creates a disposable SQLite database in `.local-dev/`, seeds it with the
+content that ships with the repo, and serves the site plus the **real** API
+handlers at `http://localhost:4180`. It is hard-wired to refuse the production
+database: the harness overrides `DATABASE_URL` and the derived local schema
+only ever reads `LOCAL_DATABASE_URL`.
+
+| Command | What it does |
+| --- | --- |
+| `npm run dev:local` | Set up if needed, then serve (`PORT=5000 npm run dev:local` for another port) |
+| `npm run dev:local:setup` | (Re)create the local database and reseed it |
+| `npm run dev:local:reset` | Start over from an empty database |
+
+Log in with the `ADMIN_EMAIL` from your `.env` and the password
+`local-dev-password` (never your production `ADMIN_PASSWORD`).
+
+Two things worth knowing: the local database is *not* a copy of production —
+it is built from `prisma/seed.js` + `prisma/content-defaults.js` — and Node
+caches modules, so restart the process after editing anything under `api/` or
+`lib/`. Content edits made in the dashboard need no restart.
+
+**Option B — with Vercel, against a real Postgres database:**
+
 ```bash
 npm install
 cp .env.example .env             # fill in DATABASE_URL, JWT secret, etc.
@@ -128,12 +157,18 @@ before. It's safe to re-run — it upserts by name/title, it will not create
 duplicates or touch content you've already edited in the dashboard.
 
 ### Run
+Either the zero-setup local harness (no Vercel, no Postgres):
+```bash
+npm run dev:local
+```
+…or `vercel dev` against your real database:
 ```bash
 npm i -g vercel   # once
 vercel dev
 ```
 Visit `http://localhost:3000` for the site and `http://localhost:3000/admin`
-to log in with the `ADMIN_EMAIL` / `ADMIN_PASSWORD` you set above.
+to log in with the `ADMIN_EMAIL` / `ADMIN_PASSWORD` you set above. The harness
+serves on `http://localhost:4180` instead.
 
 ## 4. Creating/resetting the admin login later
 ```bash

@@ -15,3 +15,6 @@ frontend/uploads/*
 # Prisma
 prisma/*.db
 prisma/migrations/dev.db
+
+# Local development harness: disposable SQLite database + generated client
+.local-dev/

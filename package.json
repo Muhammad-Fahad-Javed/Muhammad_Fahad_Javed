@@ -5,6 +5,9 @@
   "description": "Portfolio site (static frontend) + Admin Dashboard / CMS backend (Vercel serverless functions + Prisma).",
   "scripts": {
     "dev": "vercel dev",
+    "dev:local": "node scripts/local-dev/run.js",
+    "dev:local:setup": "node scripts/local-dev/setup.js",
+    "dev:local:reset": "node scripts/local-dev/setup.js --reset",
     "build": "prisma generate && node scripts/prepare-build.js",
     "start": "vercel dev",
     "postinstall": "prisma generate",
