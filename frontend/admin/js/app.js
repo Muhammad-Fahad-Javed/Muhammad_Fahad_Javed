@@ -600,25 +600,36 @@
   // Sidebar
   // ---------------------------------------------------------------------
 
+  // Singletons that belong in the "Settings" group. Everything else is treated
+  // as page content, so newly registered singletons appear automatically.
+  var SETTINGS_SINGLETONS = ['contact', 'seo', 'site-settings'];
+
+  function singletonItem(key) {
+    var def = window.CMS_SINGLETONS[key];
+    return { label: def.label, icon: def.icon, href: '#/singleton/' + key };
+  }
+
   function buildSidebar() {
+    var singletonKeys = Object.keys(window.CMS_SINGLETONS);
+
+    var contentItems = singletonKeys
+      .filter(function (key) { return SETTINGS_SINGLETONS.indexOf(key) === -1; })
+      .map(singletonItem);
+
+    var settingsItems = SETTINGS_SINGLETONS
+      .filter(function (key) { return !!window.CMS_SINGLETONS[key]; })
+      .map(singletonItem);
+    settingsItems.push({ label: 'Media', icon: 'fas fa-images', href: '#/media' });
+    settingsItems.push({ label: 'My Account', icon: 'fas fa-lock', href: '#/account' });
+
     var groups = [
-      { label: 'Overview', items: [{ key: 'dashboard', label: 'Dashboard', icon: 'fas fa-gauge-high', href: '#/dashboard' }] },
-      { label: 'Site Content', items: [
-        { label: 'Profile', icon: 'fas fa-id-badge', href: '#/singleton/profile' },
-        { label: 'Hero', icon: 'fas fa-house', href: '#/singleton/hero' },
-        { label: 'About', icon: 'fas fa-user', href: '#/singleton/about' },
-      ]},
+      { label: 'Overview', items: [{ label: 'Dashboard', icon: 'fas fa-gauge-high', href: '#/dashboard' }] },
+      { label: 'Site Content', items: contentItems },
       { label: 'Collections', items: Object.keys(window.CMS_COLLECTIONS).map(function (key) {
         var d = window.CMS_COLLECTIONS[key];
         return { label: d.label, icon: d.icon, href: '#/collection/' + key };
-      })},
-      { label: 'Settings', items: [
-        { label: 'Contact Information', icon: 'fas fa-envelope', href: '#/singleton/contact' },
-        { label: 'SEO', icon: 'fas fa-magnifying-glass-chart', href: '#/singleton/seo' },
-        { label: 'Media', icon: 'fas fa-images', href: '#/media' },
-        { label: 'Site Settings', icon: 'fas fa-sliders', href: '#/singleton/site-settings' },
-        { label: 'My Account', icon: 'fas fa-lock', href: '#/account' },
-      ]},
+      }) },
+      { label: 'Settings', items: settingsItems },
     ];
 
     sidebarNavEl.innerHTML = groups.map(function (g) {

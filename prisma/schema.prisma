@@ -310,6 +310,178 @@ model Testimonial {
   updatedAt DateTime @updatedAt
 }
 
+// ---------------------------------------------------------------------------
+// ADDITIONAL CONTENT TYPES
+//
+// Everything the public page shows is editable from the admin. These mirror
+// the sections of frontend/index.html that used to be hardcoded.
+// ---------------------------------------------------------------------------
+
+model WhyCard {
+  id          String   @id @default(cuid())
+  icon        String   @default("")
+  title       String
+  description String   @default("")
+  order       Int      @default(0)
+  visible     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ProcessStep {
+  id          String   @id @default(cuid())
+  icon        String   @default("")
+  title       String
+  description String   @default("")
+  order       Int      @default(0)
+  visible     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Faq {
+  id        String   @id @default(cuid())
+  question  String
+  answer    String   @default("")
+  order     Int      @default(0)
+  visible   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model JourneyItem {
+  id          String   @id @default(cuid())
+  year        String   @default("")
+  title       String
+  description String   @default("")
+  tagList     String   @default("[]")
+  image       String   @default("")
+  order       Int      @default(0)
+  visible     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model BlogPost {
+  id        String   @id @default(cuid())
+  title     String
+  category  String   @default("")
+  excerpt   String   @default("")
+  body      String   @default("")
+  image     String   @default("")
+  tagList   String   @default("[]")
+  date      String   @default("")
+  readTime  String   @default("")
+  url       String   @default("")
+  featured  Boolean  @default(false)
+  published Boolean  @default(true)
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model CommunityItem {
+  id          String   @id @default(cuid())
+  title       String
+  description String   @default("")
+  icon        String   @default("")
+  image       String   @default("")
+  stats       String   @default("")
+  url         String   @default("")
+  order       Int      @default(0)
+  visible     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model BeyondCard {
+  id          String   @id @default(cuid())
+  icon        String   @default("")
+  title       String
+  description String   @default("")
+  order       Int      @default(0)
+  visible     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CodingProfile {
+  id          String   @id @default(cuid())
+  platform    String
+  title       String   @default("")
+  description String   @default("")
+  icon        String   @default("")
+  image       String   @default("")
+  url         String   @default("")
+  badge       String   @default("")
+  order       Int      @default(0)
+  visible     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model ClothericCard {
+  id          String   @id @default(cuid())
+  icon        String   @default("")
+  title       String
+  description String   @default("")
+  order       Int      @default(0)
+  visible     Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Key/value store for the static text scattered across the page (section
+// eyebrows, headings, navigation labels, footer, hero copy, banners).
+model SiteText {
+  id        String   @id @default(cuid())
+  key       String
+  label     String   @default("")
+  value     String   @default("")
+  group     String   @default("")
+  order     Int      @default(0)
+  visible   Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model LinkedInProfile {
+  id              String   @id @default("singleton")
+  name            String   @default("")
+  headline        String   @default("")
+  location        String   @default("")
+  avatar          String   @default("")
+  url             String   @default("")
+  connections     String   @default("")
+  recommendations String   @default("")
+  posts           String   @default("")
+  openToWork      Boolean  @default(true)
+  updatedAt       DateTime @updatedAt
+}
+
+model ResumeSection {
+  id            String   @id @default("singleton")
+  intro         String   @default("")
+  educationList String   @default("[]")
+  coreSkills    String   @default("[]")
+  buttonText    String   @default("")
+  buttonUrl     String   @default("")
+  updatedAt     DateTime @updatedAt
+}
+
+model GithubSection {
+  id                String   @id @default("singleton")
+  username          String   @default("")
+  profileUrl        String   @default("")
+  bio               String   @default("")
+  location          String   @default("")
+  showStats         Boolean  @default(true)
+  showContributions Boolean  @default(true)
+  showRepos         Boolean  @default(true)
+  repoLimit         Int      @default(6)
+  updatedAt         DateTime @updatedAt
+}
+
 model Media {
   id        String   @id @default(cuid())
   filename  String

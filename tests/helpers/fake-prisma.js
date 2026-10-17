@@ -13,6 +13,9 @@ const MODELS = [
   'profile', 'hero', 'about', 'seoSettings', 'siteSettings',
   'socialLink', 'skill', 'project', 'certificate', 'experience',
   'education', 'service', 'achievement', 'testimonial',
+  'whyCard', 'processStep', 'faq', 'journeyItem', 'blogPost',
+  'communityItem', 'beyondCard', 'codingProfile', 'clothericCard',
+  'siteText', 'linkedInProfile', 'resumeSection', 'githubSection',
 ];
 
 function isPlainObject(value) {
