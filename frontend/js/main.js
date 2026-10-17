@@ -716,7 +716,22 @@
         // ═══════════════════════════════════════════════════════════════
         (function() {
             'use strict';
-            const GITHUB_USERNAME = 'muhammad-fahad-javed';
+            const GITHUB_FALLBACK_USERNAME = 'muhammad-fahad-javed';
+            // The username (and the section's wording and toggles) can be managed
+            // from the CMS. content-loader.js publishes what it applied here, both
+            // before this runs and via the 'portfolio:github-config' event.
+            function githubConfig() {
+                return Object.assign({
+                    username: GITHUB_FALLBACK_USERNAME,
+                    repoLimit: 12,
+                    profileUrl: '',
+                    bio: '',
+                    location: '',
+                    showStats: true,
+                    showContributions: true,
+                    showRepos: true,
+                }, window.__PORTFOLIO_GITHUB__ || {});
+            }
             const loadingEl = document.getElementById('ghLoading');
             const contentEl = document.getElementById('ghContent');
             const errorEl = document.getElementById('ghError');
@@ -882,6 +897,8 @@
             }
 
             async function fetchGitHubData() {
+                const cfg = githubConfig();
+                const GITHUB_USERNAME = cfg.username || GITHUB_FALLBACK_USERNAME;
                 const cacheKey = 'github_cache_' + GITHUB_USERNAME;
                 const cacheTime = localStorage.getItem(cacheKey + '_time');
                 const now = Date.now();
@@ -903,7 +920,7 @@
                     // Fetch user profile and repos directly from GitHub API
                     const [userRes, reposRes] = await Promise.all([
                         fetch(`https://api.github.com/users/${GITHUB_USERNAME}`, { signal: controller.signal }),
-                        fetch(`https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=stars&per_page=12`, { signal: controller.signal })
+                        fetch(`https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=stars&per_page=${cfg.repoLimit || 12}`, { signal: controller.signal })
                     ]);
                     clearTimeout(timeout);
 
@@ -986,6 +1003,9 @@
 
             fetchGitHubData();
             setInterval(fetchGitHubData, 300000);
+            // The CMS config usually arrives after this script runs, so re-fetch
+            // once it does.
+            window.addEventListener('portfolio:github-config', function () { fetchGitHubData(); });
         })();
 
         // ═══════════════════════════════════════════════════════════════

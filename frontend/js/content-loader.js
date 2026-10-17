@@ -699,6 +699,38 @@
     }
   }
 
+  // The GitHub dashboard itself is fetched from api.github.com by main.js.
+  // This publishes the editor's configuration (username, wording, toggles) so
+  // main.js can use it, and applies the parts that do not need the API.
+  function applyGithub(gh) {
+    if (!gh) return;
+    window.__PORTFOLIO_GITHUB__ = gh;
+
+    var section = document.querySelector('#github');
+    if (section) {
+      if (gh.username) {
+        var nameEl = section.querySelector('#ghName');
+        if (nameEl) nameEl.textContent = gh.username;
+      }
+      var bioEl = section.querySelector('#ghBio');
+      if (bioEl && gh.bio) bioEl.textContent = gh.bio;
+      var locEl = section.querySelector('#ghLocation');
+      if (locEl && gh.location) locEl.textContent = gh.location;
+      var link = section.querySelector('#ghProfileLink');
+      if (link && gh.profileUrl) link.href = gh.profileUrl;
+
+      [['showStats', '#ghStatsRow'], ['showContributions', '.gh-contribution-wrap'], ['showRepos', '#githubGridWrap']]
+        .forEach(function (pair) {
+          var el = section.querySelector(pair[1]);
+          if (el) el.style.display = gh[pair[0]] === false ? 'none' : '';
+        });
+    }
+
+    try {
+      window.dispatchEvent(new CustomEvent('portfolio:github-config', { detail: gh }));
+    } catch (e) { /* CustomEvent unsupported — main.js still reads the global */ }
+  }
+
   function applySocialAndContact(social, profile) {
     // Footer social icons.
     var footerSocial = document.querySelector('.footer-social');
@@ -816,6 +848,7 @@
     safeApply(applyCodingProfiles, 'codingProfiles', data['coding-profiles']);
     safeApply(applyClotheric, 'clotheric', data.clotheric);
     safeApply(applyLinkedIn, 'linkedin', data.linkedin);
+    safeApply(applyGithub, 'github', data.github);
     safeApply(applyResumeSection, 'resumeSection', data.resume);
     safeApply(applySeo, 'seo', data.seo);
   }
