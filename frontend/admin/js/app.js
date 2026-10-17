@@ -69,30 +69,67 @@
       var previewWrap = document.createElement('div');
       previewWrap.className = 'image-field-preview';
       var currentUrl = value || '';
+
+      var urlInput = document.createElement('input');
+      urlInput.type = 'text';
+      urlInput.placeholder = 'Image / File URL (or click Choose/Upload)';
+      urlInput.value = currentUrl;
+      urlInput.style.cssText = 'margin-top:8px;width:100%;font-size:0.85rem;font-family:monospace;';
+      urlInput.addEventListener('input', function () {
+        currentUrl = urlInput.value.trim();
+        renderThumb();
+      });
+
+      var thumbBox = document.createElement('div');
+      function renderThumb() {
+        if (!currentUrl) {
+          thumbBox.innerHTML = '<div class="no-image" style="padding:16px;background:#f9fafb;border-radius:8px;border:1px dashed #d1d5db;text-align:center;color:#6b7280;"><i class="fas fa-image" style="font-size:1.5rem;display:block;margin-bottom:4px;"></i> No file selected</div>';
+          return;
+        }
+        var isPdf = /\.pdf($|\?)/i.test(currentUrl);
+        if (isPdf) {
+          thumbBox.innerHTML = '<div style="padding:12px;background:#f3f4f6;border-radius:8px;display:flex;align-items:center;gap:10px;"><i class="fas fa-file-pdf" style="font-size:1.8rem;color:#dc2626;"></i><div style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.82rem;color:#374151;">' + UI.escapeHtml(currentUrl) + '</div></div>';
+        } else {
+          thumbBox.innerHTML = '<img src="' + UI.escapeHtml(currentUrl) + '" style="max-height:140px;max-width:100%;border-radius:8px;border:1px solid #e5e7eb;object-fit:contain;background:#f9fafb;" onerror="this.onerror=null;this.parentElement.innerHTML=\'<div class=no-image style=\\\'padding:12px;background:#fee2e2;border-radius:8px;color:#b91c1c;font-size:0.85rem;\\\'><i class=\\\'fas fa-triangle-exclamation\\\'></i> Image failed to load (check URL)</div>\'">';
+        }
+      }
+
       function renderPreview() {
-        previewWrap.innerHTML = currentUrl
-          ? '<img src="' + UI.escapeHtml(currentUrl) + '">'
-          : '<div class="no-image"><i class="fas fa-image"></i></div>';
+        previewWrap.innerHTML = '';
+        renderThumb();
+        previewWrap.appendChild(thumbBox);
+
         var btnWrap = document.createElement('div');
+        btnWrap.style.cssText = 'display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap;';
         var pickBtn = document.createElement('button');
         pickBtn.type = 'button';
-        pickBtn.className = 'btn btn-sm';
+        pickBtn.className = 'btn btn-sm btn-primary';
         pickBtn.innerHTML = '<i class="fas fa-upload"></i> Choose / Upload';
         pickBtn.addEventListener('click', function () {
-          Media.openPicker(function (url) { currentUrl = url; renderPreview(); });
+          Media.openPicker(function (url) {
+            currentUrl = url;
+            urlInput.value = url;
+            renderPreview();
+          });
         });
         btnWrap.appendChild(pickBtn);
+
         if (currentUrl) {
           var clearBtn = document.createElement('button');
           clearBtn.type = 'button';
-          clearBtn.className = 'btn btn-sm';
-          clearBtn.style.marginLeft = '6px';
-          clearBtn.textContent = 'Remove';
-          clearBtn.addEventListener('click', function () { currentUrl = ''; renderPreview(); });
+          clearBtn.className = 'btn btn-sm btn-danger';
+          clearBtn.innerHTML = '<i class="fas fa-times"></i> Remove';
+          clearBtn.addEventListener('click', function () {
+            currentUrl = '';
+            urlInput.value = '';
+            renderPreview();
+          });
           btnWrap.appendChild(clearBtn);
         }
         previewWrap.appendChild(btnWrap);
+        previewWrap.appendChild(urlInput);
       }
+
       renderPreview();
       wrap.appendChild(previewWrap);
       getValue = function () { return currentUrl; };
@@ -363,6 +400,7 @@
         tr.querySelector('.toggle-publish').addEventListener('click', async function () {
           try {
             await AdminAPI.patch('/api/admin/' + key + '/' + item.id, { [def.publishField]: !published });
+            try { localStorage.removeItem('cms_portfolio_cache_v2'); } catch (e) {}
             UI.toast(published ? 'Hidden.' : 'Published.', 'success');
             renderCollectionList(key);
           } catch (err) { UI.toast(err.message, 'error'); }
@@ -377,6 +415,7 @@
         if (!ok) return;
         try {
           await AdminAPI.del('/api/admin/' + key + '/' + item.id);
+          try { localStorage.removeItem('cms_portfolio_cache_v2'); } catch (e) {}
           UI.toast('Deleted.', 'success');
           renderCollectionList(key);
         } catch (err) { UI.toast(err.message, 'error'); }
@@ -454,6 +493,7 @@
         await AdminAPI.put('/api/admin/' + key + '/' + id, payload);
         UI.toast('Saved.', 'success');
       }
+      try { localStorage.removeItem('cms_portfolio_cache_v2'); } catch (e) {}
       location.hash = '#/collection/' + key;
     }, isNew ? 'Create' : 'Save Changes');
 
@@ -485,6 +525,7 @@
 
     var form = renderForm(def.fields, values, async function (payload) {
       await AdminAPI.put('/api/admin/singleton/' + key, payload);
+      try { localStorage.removeItem('cms_portfolio_cache_v2'); } catch (e) {}
       UI.toast('Saved. Changes are live on the public site immediately.', 'success');
     }, 'Save Changes');
 

@@ -42,7 +42,6 @@
     <meta name="theme-color" content="#5A3B22" />
     <meta name="color-scheme" content="dark light" />
     <meta name="msapplication-TileColor" content="#5A3B22" />
-    <meta name="msapplication-config" content="/browserconfig.xml" />
 
     <!-- ============================================================
     FAVICON — Complete set
@@ -84,8 +83,10 @@
     <!-- ============================================================
     SECURITY HEADERS
     ============================================================ -->
+    <!-- These are also sent as real HTTP headers in vercel.json. X-Frame-Options
+         is NOT valid inside a <meta> tag (browsers ignore it and log an error),
+         so it lives only in vercel.json's headers. -->
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
-    <meta http-equiv="X-Frame-Options" content="DENY" />
     <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin" />
 
     <!-- ============================================================
@@ -117,12 +118,14 @@
     PRELOAD CRITICAL ASSETS
     ============================================================ -->
     <link rel="preload" as="image" href="images/hero.jpg" fetchpriority="high" />
-    <link rel="preload" as="font" href="https://fonts.gstatic.com/s/inter/v12/UcC73FwrK3iLTeHuS_fvQtMwCp50KnMa1ZL7W0Q5nw.woff2" type="font/woff2" crossorigin />
+    <!-- The old hard-coded woff2 preload pinned inter/v12 (a version Google no
+         longer serves), so it wasted a request while the real webfonts arrived
+         late and reflowed the hero. The stylesheet is preloaded just below. -->
 
     <!-- ============================================================
     GOOGLE FONTS — Optimized load
     ============================================================ -->
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'" />
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" onload="this.onload=null;this.rel='stylesheet'" />
     <noscript>
         <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
     </noscript>
@@ -169,7 +172,7 @@
                 "email": "mailto:muhammadfahadjaved610@gmail.com",
                 "image": {
                     "@type": "ImageObject",
-                    "url": "https://muhammadfahadjaved.vercel.app/images/fahad-javed-profile.jpg",
+                    "url": "https://muhammadfahadjaved.vercel.app/images/og-image.jpg",
                     "width": "400",
                     "height": "400"
                 },
@@ -274,7 +277,7 @@
 
     <!-- ─── SEO FALLBACK: Critical identity content for crawlers ─── -->
     <div class="seo-fallback" aria-hidden="true">
-        <h1>Muhammad Fahad Javed</h1>
+        <p>Muhammad Fahad Javed</p>
         <p>Computer Science student at FAST-NUCES, Multan. C++ developer, full-stack web developer, and AI enthusiast from Pakistan.</p>
         <p>Skills: C++, Object-Oriented Programming, Full-Stack Web Development, JavaScript, Python, AI, Git, GitHub.</p>
     </div>
@@ -326,34 +329,36 @@
             <li><a href="#contact">Contact</a></li>
         </ul>
 
-        <ul class="nav-links" id="navLinks" role="menubar">
-            <button class="nav-close" id="navClose" aria-label="Close menu">
-                <i class="fas fa-times" aria-hidden="true"></i>
-            </button>
-            <li role="none"><a href="#hero" role="menuitem">Home</a></li>
-            <li role="none"><a href="#about" role="menuitem">About</a></li>
-            <li role="none"><a href="#why-hire" role="menuitem">Why Hire</a></li>
-            <li role="none"><a href="#clotheric" role="menuitem">Startup</a></li>
-            <li role="none"><a href="#featured" role="menuitem">Featured</a></li>
-            <li role="none"><a href="#education" role="menuitem">Education</a></li>
-            <li role="none"><a href="#skills" role="menuitem">Skills</a></li>
-            <li role="none"><a href="#process" role="menuitem">Process</a></li>
-            <li role="none"><a href="#projects" role="menuitem">Projects</a></li>
-            <li role="none"><a href="#experience" role="menuitem">Experience</a></li>
-            <li role="none"><a href="#achievements" role="menuitem">Achievements</a></li>
-            <li role="none"><a href="#certificates" role="menuitem">Certificates</a></li>
-            <li role="none"><a href="#services" role="menuitem">Services</a></li>
-            <li role="none"><a href="#github" role="menuitem">GitHub</a></li>
-            <li role="none"><a href="#coding" role="menuitem">Coding</a></li>
-            <li role="none"><a href="#linkedin" role="menuitem">LinkedIn</a></li>
-            <li role="none"><a href="#journey" role="menuitem">Journey</a></li>
-            <li role="none"><a href="#blog" role="menuitem">Blog</a></li>
-            <li role="none"><a href="#testimonials" role="menuitem">Testimonials</a></li>
-            <li role="none"><a href="#community" role="menuitem">Community</a></li>
-            <li role="none"><a href="#resume" role="menuitem">Resume</a></li>
-            <li role="none"><a href="#faq" role="menuitem">FAQ</a></li>
-            <li role="none"><a href="#beyond-code" role="menuitem">Beyond Code</a></li>
-            <li role="none"><a href="#contact" role="menuitem" class="nav-hire">Contact</a></li>
+        <ul class="nav-links" id="navLinks">
+            <li class="nav-close-item">
+                <button class="nav-close" id="navClose" aria-label="Close menu">
+                    <i class="fas fa-times" aria-hidden="true"></i>
+                </button>
+            </li>
+            <li><a href="#hero">Home</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#why-hire">Why Hire</a></li>
+            <li><a href="#clotheric">Startup</a></li>
+            <li><a href="#featured">Featured</a></li>
+            <li><a href="#education">Education</a></li>
+            <li><a href="#skills">Skills</a></li>
+            <li><a href="#process">Process</a></li>
+            <li><a href="#projects">Projects</a></li>
+            <li><a href="#experience">Experience</a></li>
+            <li><a href="#achievements">Achievements</a></li>
+            <li><a href="#certificates">Certificates</a></li>
+            <li><a href="#services">Services</a></li>
+            <li><a href="#github">GitHub</a></li>
+            <li><a href="#coding">Coding</a></li>
+            <li><a href="#linkedin">LinkedIn</a></li>
+            <li><a href="#journey">Journey</a></li>
+            <li><a href="#blog">Blog</a></li>
+            <li><a href="#testimonials">Testimonials</a></li>
+            <li><a href="#community">Community</a></li>
+            <li><a href="#resume">Resume</a></li>
+            <li><a href="#faq">FAQ</a></li>
+            <li><a href="#beyond-code">Beyond Code</a></li>
+            <li><a href="#contact" class="nav-hire">Contact</a></li>
         </ul>
 
         <span class="nav-indicator" id="navIndicator"></span>
@@ -577,49 +582,7 @@
         </section>
 
         <!-- ═══════════════════════════════════════════════════════════════
-        5. FEATURED PROJECT
-        ═══════════════════════════════════════════════════════════════ -->
-        <section class="section" id="featured" aria-labelledby="featured-heading">
-            <div class="container">
-                <span class="section-eyebrow reveal"><i class="fas fa-crown" aria-hidden="true"></i> Featured Project</span>
-                <h2 id="featured-heading" class="section-h2 reveal reveal-delay-1">
-                    <span class="text-reveal"><span class="line">Student Management <span class="grad-text shimmer">System</span></span></span>
-                </h2>
-                <div class="featured-project animated-border reveal reveal-delay-2">
-                    <div class="fp-top">
-                        <div class="fp-img">
-                            <picture>
-                                <source srcset="projects/studentmanagemetsystem.avif" type="image/avif">
-                                <source srcset="projects/studentmanagemetsystem.webp" type="image/webp">
-                                <img src="projects/studentmanagemetsystem.png" alt="Student Management System — A C++ console application with full CRUD operations using object-oriented programming" loading="lazy" decoding="async" width="800" height="500">
-                            </picture>
-                        </div>
-                        <div class="fp-content">
-                            <span class="fp-badge"><i class="fas fa-code" aria-hidden="true"></i> Full CRUD · C++</span>
-                            <h3 class="fp-title">Student Management System</h3>
-                            <p class="fp-desc">A complete console-based student management system built with <strong>C++</strong> using object-oriented principles. Features multi-level inheritance, polymorphism, file persistence, and a clean CLI interface.</p>
-                            <div class="fp-stats">
-                                <div class="fp-stat"><span class="fp-stat-num">5+</span><span class="fp-stat-label">Classes</span></div>
-                                <div class="fp-stat"><span class="fp-stat-num">100%</span><span class="fp-stat-label">OOP</span></div>
-                                <div class="fp-stat"><span class="fp-stat-num">Full</span><span class="fp-stat-label">CRUD</span></div>
-                            </div>
-                            <div class="fp-actions">
-                                <a href="https://github.com/Muhammad-Fahad-Javed/student-management-system" target="_blank" rel="noopener noreferrer" class="btn-glow" style="font-size:0.5rem;padding:8px 20px;"><i class="fab fa-github" aria-hidden="true"></i> GitHub</a>
-                                <a href="#" class="btn-ghost" style="font-size:0.5rem;padding:8px 20px;"><i class="fas fa-external-link-alt" aria-hidden="true"></i> Live Demo</a>
-                            </div>
-                        </div>
-                    </div>
-                    <div style="margin-top:18px;padding-top:18px;border-top:1px solid var(--border-light);display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;">
-                        <div style="text-align:center;"><span style="font-size:0.45rem;text-transform:uppercase;letter-spacing:1.5px;opacity:0.25;font-family:var(--font-body);">Challenge</span><p style="font-size:0.65rem;opacity:0.6;margin-top:2px;">Manage student records efficiently with OOP</p></div>
-                        <div style="text-align:center;"><span style="font-size:0.45rem;text-transform:uppercase;letter-spacing:1.5px;opacity:0.25;font-family:var(--font-body);">Solution</span><p style="font-size:0.65rem;opacity:0.6;margin-top:2px;">Multi-level inheritance + file persistence</p></div>
-                        <div style="text-align:center;"><span style="font-size:0.45rem;text-transform:uppercase;letter-spacing:1.5px;opacity:0.25;font-family:var(--font-body);">Result</span><p style="font-size:0.65rem;opacity:0.6;margin-top:2px;">100% functional CLI app with full CRUD</p></div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- ═══════════════════════════════════════════════════════════════
-        6. EDUCATION
+        5. EDUCATION
         ═══════════════════════════════════════════════════════════════ -->
         <section class="section" id="education" aria-labelledby="education-heading">
             <div class="container">
@@ -630,19 +593,19 @@
                 <div class="edu-grid">
                     <div class="edu-card animated-border reveal reveal-delay-1">
                         <div class="edu-img"><picture><source srcset="edu-fast.avif" type="image/avif"><source srcset="edu-fast.webp" type="image/webp"><img src="edu-fast.jpg" alt="FAST-NUCES — Muhammad Fahad Javed's university" loading="lazy" decoding="async" width="200" height="200" onerror="this.parentElement.innerHTML='<div class=edu-placeholder><i class=\'fas fa-university\'></i></div>'"></picture></div>
-                        <h4>BS Computer Science</h4>
+                        <h3>BS Computer Science</h3>
                         <div class="edu-inst">FAST NUCES, Multan</div>
                         <span class="edu-year">2025 – 2029 · In Progress</span>
                     </div>
                     <div class="edu-card animated-border reveal reveal-delay-2">
                         <div class="edu-img"><picture><source srcset="edu-college.avif" type="image/avif"><source srcset="edu-college.webp" type="image/webp"><img src="edu-college.jpg" alt="Intermediate (ICS) — Fahad Javed" loading="lazy" decoding="async" width="200" height="200" onerror="this.parentElement.innerHTML='<div class=edu-placeholder><i class=\'fas fa-school\'></i></div>'"></picture></div>
-                        <h4>Intermediate (ICS)</h4>
+                        <h3>Intermediate (ICS)</h3>
                         <div class="edu-inst">KIPS College</div>
                         <span class="edu-year">2022 – 2024 · Completed</span>
                     </div>
                     <div class="edu-card animated-border reveal reveal-delay-3">
                         <div class="edu-img"><picture><source srcset="edu-school.avif" type="image/avif"><source srcset="edu-school.webp" type="image/webp"><img src="edu-school.jpg" alt="Matriculation — Muhammad Fahad Javed" loading="lazy" decoding="async" width="200" height="200" onerror="this.parentElement.innerHTML='<div class=edu-placeholder><i class=\'fas fa-book\'></i></div>'"></picture></div>
-                        <h4>Matriculation (Computer Science)</h4>
+                        <h3>Matriculation (Computer Science)</h3>
                         <div class="edu-inst">Government Model High School</div>
                         <span class="edu-year">2021 – 2022 · Completed</span>
                     </div>
@@ -733,12 +696,12 @@
                     <span class="text-reveal"><span class="line">My <span class="grad-text shimmer">Development Process</span></span></span>
                 </h2>
                 <div class="process-timeline reveal reveal-delay-2">
-                    <div class="process-step"><div class="ps-icon"><i class="fas fa-magnifying-glass" aria-hidden="true"></i><span class="ps-step-num">1</span></div><h4>Research</h4><p>Understand the problem deeply</p></div>
-                    <div class="process-step"><div class="ps-icon"><i class="fas fa-pen-ruler" aria-hidden="true"></i><span class="ps-step-num">2</span></div><h4>Planning</h4><p>Design architecture &amp; flow</p></div>
-                    <div class="process-step"><div class="ps-icon"><i class="fas fa-paintbrush" aria-hidden="true"></i><span class="ps-step-num">3</span></div><h4>Design</h4><p>UI/UX &amp; system design</p></div>
-                    <div class="process-step"><div class="ps-icon"><i class="fas fa-code" aria-hidden="true"></i><span class="ps-step-num">4</span></div><h4>Develop</h4><p>Write clean, testable code</p></div>
-                    <div class="process-step"><div class="ps-icon"><i class="fas fa-vial" aria-hidden="true"></i><span class="ps-step-num">5</span></div><h4>Testing</h4><p>Rigorous quality assurance</p></div>
-                    <div class="process-step"><div class="ps-icon"><i class="fas fa-rocket" aria-hidden="true"></i><span class="ps-step-num">6</span></div><h4>Deploy</h4><p>Ship with confidence</p></div>
+                    <div class="process-step"><div class="ps-icon"><i class="fas fa-magnifying-glass" aria-hidden="true"></i><span class="ps-step-num">1</span></div><h3>Research</h3><p>Understand the problem deeply</p></div>
+                    <div class="process-step"><div class="ps-icon"><i class="fas fa-pen-ruler" aria-hidden="true"></i><span class="ps-step-num">2</span></div><h3>Planning</h3><p>Design architecture &amp; flow</p></div>
+                    <div class="process-step"><div class="ps-icon"><i class="fas fa-paintbrush" aria-hidden="true"></i><span class="ps-step-num">3</span></div><h3>Design</h3><p>UI/UX &amp; system design</p></div>
+                    <div class="process-step"><div class="ps-icon"><i class="fas fa-code" aria-hidden="true"></i><span class="ps-step-num">4</span></div><h3>Develop</h3><p>Write clean, testable code</p></div>
+                    <div class="process-step"><div class="ps-icon"><i class="fas fa-vial" aria-hidden="true"></i><span class="ps-step-num">5</span></div><h3>Testing</h3><p>Rigorous quality assurance</p></div>
+                    <div class="process-step"><div class="ps-icon"><i class="fas fa-rocket" aria-hidden="true"></i><span class="ps-step-num">6</span></div><h3>Deploy</h3><p>Ship with confidence</p></div>
                 </div>
             </div>
         </section>
@@ -945,10 +908,10 @@
                 </h2>
                 <div class="journey-timeline">
                     <div class="spine"></div>
-                    <div class="j-item animated-border reveal reveal-delay-1"><div class="j-img"><picture><source srcset="journey-2019.avif" type="image/avif"><source srcset="journey-2019.webp" type="image/webp"><img src="journey-2019.jpg" alt="2019 — Fahad Javed's first code" loading="lazy" decoding="async" width="100" height="100" onerror="this.innerHTML='💻'"></picture></div><div class="j-year">2019</div><h4>First "Hello World"</h4><p>Wrote my first C++ program on a dusty lab machine. That moment sparked a commitment to understanding how computers think.</p><div class="j-tags"><span class="accent-tag">C++</span><span>First Code</span></div></div>
-                    <div class="j-item animated-border reveal reveal-delay-2"><div class="j-img"><picture><source srcset="journey-2020.avif" type="image/avif"><source srcset="journey-2020.webp" type="image/webp"><img src="journey-2020.jpg" alt="2020 — Fahad Javed building systems" loading="lazy" decoding="async" width="100" height="100" onerror="this.innerHTML='🔧'"></picture></div><div class="j-year">2020–2022</div><h4>Building First Systems</h4><p>Built 5+ console applications from scratch — games, utilities, simulators. Learned pointer arithmetic, memory management, and code discipline.</p><div class="j-tags"><span>OOP</span><span class="accent-tag">Pointers</span></div></div>
-                    <div class="j-item animated-border reveal reveal-delay-3"><div class="j-img"><picture><source srcset="journey-2025.avif" type="image/avif"><source srcset="journey-2025.webp" type="image/webp"><img src="journey-2025.jpg" alt="2025 — Fahad Javed at FAST-NUCES" loading="lazy" decoding="async" width="100" height="100" onerror="this.innerHTML='🎓'"></picture></div><div class="j-year">2025</div><h4>FAST-NUCES</h4><p>Entered FAST-NUCES with a clear mission: formalize my engineering knowledge through rigorous coursework and brilliant peers.</p><div class="j-tags"><span>Algorithms</span><span class="accent-tag">DSA</span></div></div>
-                    <div class="j-item animated-border reveal reveal-delay-4"><div class="j-img"><picture><source srcset="journey-2026.avif" type="image/avif"><source srcset="journey-2026.webp" type="image/webp"><img src="journey-2026.jpg" alt="2026 — Fahad Javed exploring AI" loading="lazy" decoding="async" width="100" height="100" onerror="this.innerHTML='🧠'"></picture></div><div class="j-year">2026+</div><h4>AI Research &amp; Future</h4><p>Diving into AI interpretability, HCI, and intelligent systems. Building technology that understands and augments human decision-making.</p><div class="j-tags"><span class="accent-tag">AI</span><span>Research</span></div></div>
+                    <div class="j-item animated-border reveal reveal-delay-1"><div class="j-img"><picture><source srcset="journey-2019.avif" type="image/avif"><source srcset="journey-2019.webp" type="image/webp"><img src="journey-2019.jpg" alt="2019 — Fahad Javed's first code" loading="lazy" decoding="async" width="100" height="100" onerror="this.innerHTML='💻'"></picture></div><div class="j-year">2019</div><h3>First "Hello World"</h3><p>Wrote my first C++ program on a dusty lab machine. That moment sparked a commitment to understanding how computers think.</p><div class="j-tags"><span class="accent-tag">C++</span><span>First Code</span></div></div>
+                    <div class="j-item animated-border reveal reveal-delay-2"><div class="j-img"><picture><source srcset="journey-2020.avif" type="image/avif"><source srcset="journey-2020.webp" type="image/webp"><img src="journey-2020.jpg" alt="2020 — Fahad Javed building systems" loading="lazy" decoding="async" width="100" height="100" onerror="this.innerHTML='🔧'"></picture></div><div class="j-year">2020–2022</div><h3>Building First Systems</h3><p>Built 5+ console applications from scratch — games, utilities, simulators. Learned pointer arithmetic, memory management, and code discipline.</p><div class="j-tags"><span>OOP</span><span class="accent-tag">Pointers</span></div></div>
+                    <div class="j-item animated-border reveal reveal-delay-3"><div class="j-img"><picture><source srcset="journey-2025.avif" type="image/avif"><source srcset="journey-2025.webp" type="image/webp"><img src="journey-2025.jpg" alt="2025 — Fahad Javed at FAST-NUCES" loading="lazy" decoding="async" width="100" height="100" onerror="this.innerHTML='🎓'"></picture></div><div class="j-year">2025</div><h3>FAST-NUCES</h3><p>Entered FAST-NUCES with a clear mission: formalize my engineering knowledge through rigorous coursework and brilliant peers.</p><div class="j-tags"><span>Algorithms</span><span class="accent-tag">DSA</span></div></div>
+                    <div class="j-item animated-border reveal reveal-delay-4"><div class="j-img"><picture><source srcset="journey-2026.avif" type="image/avif"><source srcset="journey-2026.webp" type="image/webp"><img src="journey-2026.jpg" alt="2026 — Fahad Javed exploring AI" loading="lazy" decoding="async" width="100" height="100" onerror="this.innerHTML='🧠'"></picture></div><div class="j-year">2026+</div><h3>AI Research &amp; Future</h3><p>Diving into AI interpretability, HCI, and intelligent systems. Building technology that understands and augments human decision-making.</p><div class="j-tags"><span class="accent-tag">AI</span><span>Research</span></div></div>
                 </div>
             </div>
         </section>
@@ -964,10 +927,10 @@
                 </h2>
                 <div class="section-grid-wrap" data-limit="2">
                     <div class="blog-grid" id="blogGrid">
-                        <div class="blog-card animated-border reveal reveal-delay-1" data-index="0" data-type="blog"><div class="blog-img"><picture><source srcset="blog-console.avif" type="image/avif"><source srcset="blog-console.webp" type="image/webp"><img src="blog-console.jpg" alt="Console Apps — Blog by Fahad Javed" loading="lazy" decoding="async" width="600" height="375" onerror="this.parentElement.innerHTML='<div class=img-placeholder><i class=\'fas fa-terminal\'></i><span class=placeholder-label>Console Apps</span></div>'"></picture></div><div class="blog-cat">Development</div><h4>Why I Build Console Apps in 2026</h4><p>Exploring why console apps remain relevant — focusing on system resource management and low-level debugging.</p><div class="blog-meta"><span>June 2026</span><span>5 min read</span></div><div class="blog-tags"><span class="accent-tag">C++</span><span>Systems</span></div><button class="proj-link" data-detail="blog-0" style="margin-top:10px;"><i class="fas fa-book-open" aria-hidden="true"></i> Read Article</button></div>
-                        <div class="blog-card animated-border reveal reveal-delay-2" data-index="1" data-type="blog"><div class="blog-img"><picture><source srcset="blog-ai.avif" type="image/avif"><source srcset="blog-ai.webp" type="image/webp"><img src="blog-ai.jpg" alt="AI Interpretability — Blog by Fahad Javed" loading="lazy" decoding="async" width="600" height="375" onerror="this.parentElement.innerHTML='<div class=img-placeholder><i class=\'fas fa-robot\'></i><span class=placeholder-label>AI Research</span></div>'"></picture></div><div class="blog-cat">AI Research</div><h4>Interpretable AI: Why We Need Explainable Models</h4><p>Discussing the black-box nature of AI models and the importance of explainable AI (XAI) in building trustworthy systems.</p><div class="blog-meta"><span>June 2026</span><span>6 min read</span></div><div class="blog-tags"><span class="accent-tag">AI</span><span>Ethics</span></div><button class="proj-link" data-detail="blog-1" style="margin-top:10px;"><i class="fas fa-book-open" aria-hidden="true"></i> Read Article</button></div>
-                        <div class="blog-card animated-border reveal reveal-delay-3 grid-hidden" data-index="2" data-type="blog"><div class="blog-img"><picture><source srcset="blog-startup.avif" type="image/avif"><source srcset="blog-startup.webp" type="image/webp"><img src="blog-startup.jpg" alt="Startup Lessons — Blog by Muhammad Fahad Javed" loading="lazy" decoding="async" width="600" height="375" onerror="this.parentElement.innerHTML='<div class=img-placeholder><i class=\'fas fa-rocket\'></i><span class=placeholder-label>Startup</span></div>'"></picture></div><div class="blog-cat">Startup</div><h4>Building Clotheric: Lessons from Week One</h4><p>Product-market fit, user research, and the hard parts of starting a company.</p><div class="blog-meta"><span>May 2026</span><span>4 min read</span></div><div class="blog-tags"><span class="accent-tag">Startup</span><span>MVP</span></div><button class="proj-link" data-detail="blog-2" style="margin-top:10px;"><i class="fas fa-book-open" aria-hidden="true"></i> Read Article</button></div>
-                        <div class="blog-card animated-border reveal reveal-delay-4 grid-hidden" data-index="3" data-type="blog"><div class="blog-img"><picture><source srcset="blog-fast.avif" type="image/avif"><source srcset="blog-fast.webp" type="image/webp"><img src="blog-fast.jpg" alt="FAST-NUCES Experience — Blog by Fahad Javed" loading="lazy" decoding="async" width="600" height="375" onerror="this.parentElement.innerHTML='<div class=img-placeholder><i class=\'fas fa-university\'></i><span class=placeholder-label>FAST</span></div>'"></picture></div><div class="blog-cat">Academic</div><h4>What FAST-NUCES Taught Me About Engineering</h4><p>University isn't about content — it's about the way of thinking. How formal CS education shapes problem-solving.</p><div class="blog-meta"><span>April 2026</span><span>3 min read</span></div><div class="blog-tags"><span class="accent-tag">FAST</span><span>Education</span></div><button class="proj-link" data-detail="blog-3" style="margin-top:10px;"><i class="fas fa-book-open" aria-hidden="true"></i> Read Article</button></div>
+                        <div class="blog-card animated-border reveal reveal-delay-1" data-index="0" data-type="blog"><div class="blog-img"><picture><source srcset="blog-console.avif" type="image/avif"><source srcset="blog-console.webp" type="image/webp"><img src="blog-console.jpg" alt="Console Apps — Blog by Fahad Javed" loading="lazy" decoding="async" width="600" height="375" onerror="this.parentElement.innerHTML='<div class=img-placeholder><i class=\'fas fa-terminal\'></i><span class=placeholder-label>Console Apps</span></div>'"></picture></div><div class="blog-cat">Development</div><h3>Why I Build Console Apps in 2026</h3><p>Exploring why console apps remain relevant — focusing on system resource management and low-level debugging.</p><div class="blog-meta"><span>June 2026</span><span>5 min read</span></div><div class="blog-tags"><span class="accent-tag">C++</span><span>Systems</span></div><button class="proj-link" data-detail="blog-0" style="margin-top:10px;"><i class="fas fa-book-open" aria-hidden="true"></i> Read Article</button></div>
+                        <div class="blog-card animated-border reveal reveal-delay-2" data-index="1" data-type="blog"><div class="blog-img"><picture><source srcset="blog-ai.avif" type="image/avif"><source srcset="blog-ai.webp" type="image/webp"><img src="blog-ai.jpg" alt="AI Interpretability — Blog by Fahad Javed" loading="lazy" decoding="async" width="600" height="375" onerror="this.parentElement.innerHTML='<div class=img-placeholder><i class=\'fas fa-robot\'></i><span class=placeholder-label>AI Research</span></div>'"></picture></div><div class="blog-cat">AI Research</div><h3>Interpretable AI: Why We Need Explainable Models</h3><p>Discussing the black-box nature of AI models and the importance of explainable AI (XAI) in building trustworthy systems.</p><div class="blog-meta"><span>June 2026</span><span>6 min read</span></div><div class="blog-tags"><span class="accent-tag">AI</span><span>Ethics</span></div><button class="proj-link" data-detail="blog-1" style="margin-top:10px;"><i class="fas fa-book-open" aria-hidden="true"></i> Read Article</button></div>
+                        <div class="blog-card animated-border reveal reveal-delay-3 grid-hidden" data-index="2" data-type="blog"><div class="blog-img"><picture><source srcset="blog-startup.avif" type="image/avif"><source srcset="blog-startup.webp" type="image/webp"><img src="blog-startup.jpg" alt="Startup Lessons — Blog by Muhammad Fahad Javed" loading="lazy" decoding="async" width="600" height="375" onerror="this.parentElement.innerHTML='<div class=img-placeholder><i class=\'fas fa-rocket\'></i><span class=placeholder-label>Startup</span></div>'"></picture></div><div class="blog-cat">Startup</div><h3>Building Clotheric: Lessons from Week One</h3><p>Product-market fit, user research, and the hard parts of starting a company.</p><div class="blog-meta"><span>May 2026</span><span>4 min read</span></div><div class="blog-tags"><span class="accent-tag">Startup</span><span>MVP</span></div><button class="proj-link" data-detail="blog-2" style="margin-top:10px;"><i class="fas fa-book-open" aria-hidden="true"></i> Read Article</button></div>
+                        <div class="blog-card animated-border reveal reveal-delay-4 grid-hidden" data-index="3" data-type="blog"><div class="blog-img"><picture><source srcset="blog-fast.avif" type="image/avif"><source srcset="blog-fast.webp" type="image/webp"><img src="blog-fast.jpg" alt="FAST-NUCES Experience — Blog by Fahad Javed" loading="lazy" decoding="async" width="600" height="375" onerror="this.parentElement.innerHTML='<div class=img-placeholder><i class=\'fas fa-university\'></i><span class=placeholder-label>FAST</span></div>'"></picture></div><div class="blog-cat">Academic</div><h3>What FAST-NUCES Taught Me About Engineering</h3><p>University isn't about content — it's about the way of thinking. How formal CS education shapes problem-solving.</p><div class="blog-meta"><span>April 2026</span><span>3 min read</span></div><div class="blog-tags"><span class="accent-tag">FAST</span><span>Education</span></div><button class="proj-link" data-detail="blog-3" style="margin-top:10px;"><i class="fas fa-book-open" aria-hidden="true"></i> Read Article</button></div>
                     </div>
                     <div class="btn-wrapper"><button class="show-more-btn" data-target="blogGrid"><i class="fas fa-chevron-down" aria-hidden="true"></i><span class="btn-text">Show More</span></button></div>
                 </div>
@@ -1014,10 +977,10 @@
                 </h2>
                 <div class="section-grid-wrap" data-limit="3">
                     <div class="community-grid" id="communityGrid">
-                        <div class="community-card animated-border reveal reveal-delay-1" data-index="0"><div class="comm-img"><picture><source srcset="comm-youtube.avif" type="image/avif"><source srcset="comm-youtube.webp" type="image/webp"><img src="comm-youtube.jpg" alt="YouTube Channel — Fahad Javed" loading="lazy" decoding="async" width="200" height="200" onerror="this.parentElement.innerHTML='<div class=comm-placeholder><i class=\'fab fa-youtube\'></i></div>'"></picture></div><h4>Code &amp; Creativity</h4><p>YouTube channel with coding tutorials, tech insights, and development content for aspiring engineers.</p><div class="comm-stats">🎬 12+ videos · 2+ years</div></div>
-                        <div class="community-card animated-border reveal reveal-delay-2" data-index="1"><div class="comm-img"><picture><source srcset="comm-oss.avif" type="image/avif"><source srcset="comm-oss.webp" type="image/webp"><img src="comm-oss.jpg" alt="Open Source Contributions — Fahad Javed" loading="lazy" decoding="async" width="200" height="200" onerror="this.parentElement.innerHTML='<div class=comm-placeholder><i class=\'fas fa-code-branch\'></i></div>'"></picture></div><h4>Open Source</h4><p>Active contributor to educational libraries and C++ projects on GitHub. Building tools for the developer community.</p><div class="comm-stats">📦 8 repositories</div></div>
-                        <div class="community-card animated-border reveal reveal-delay-3" data-index="2"><div class="comm-img"><picture><source srcset="comm-mentor.avif" type="image/avif"><source srcset="comm-mentor.webp" type="image/webp"><img src="comm-mentor.jpg" alt="Mentorship — Fahad Javed" loading="lazy" decoding="async" width="200" height="200" onerror="this.parentElement.innerHTML='<div class=comm-placeholder><i class=\'fas fa-graduation-cap\'></i></div>'"></picture></div><h4>FAST Mentorship</h4><p>Mentoring junior students in programming fundamentals, OOP, and systems design at FAST-NUCES.</p><div class="comm-stats">🧑‍🏫 10+ mentees</div></div>
-                        <div class="community-card animated-border reveal reveal-delay-4 grid-hidden" data-index="3"><div class="comm-img"><picture><source srcset="comm-forum.avif" type="image/avif"><source srcset="comm-forum.webp" type="image/webp"><img src="comm-forum.jpg" alt="Tech Forums — Fahad Javed" loading="lazy" decoding="async" width="200" height="200" onerror="this.parentElement.innerHTML='<div class=comm-placeholder><i class=\'fas fa-stack-overflow\'></i></div>'"></picture></div><h4>Tech Forums</h4><p>Helping solve C++ and systems programming issues on Stack Overflow and developer communities.</p><div class="comm-stats">💡 50+ answers</div></div>
+                        <div class="community-card animated-border reveal reveal-delay-1" data-index="0"><div class="comm-img"><picture><source srcset="comm-youtube.avif" type="image/avif"><source srcset="comm-youtube.webp" type="image/webp"><img src="comm-youtube.jpg" alt="YouTube Channel — Fahad Javed" loading="lazy" decoding="async" width="200" height="200" onerror="this.parentElement.innerHTML='<div class=comm-placeholder><i class=\'fab fa-youtube\'></i></div>'"></picture></div><h3>Code &amp; Creativity</h3><p>YouTube channel with coding tutorials, tech insights, and development content for aspiring engineers.</p><div class="comm-stats">🎬 12+ videos · 2+ years</div></div>
+                        <div class="community-card animated-border reveal reveal-delay-2" data-index="1"><div class="comm-img"><picture><source srcset="comm-oss.avif" type="image/avif"><source srcset="comm-oss.webp" type="image/webp"><img src="comm-oss.jpg" alt="Open Source Contributions — Fahad Javed" loading="lazy" decoding="async" width="200" height="200" onerror="this.parentElement.innerHTML='<div class=comm-placeholder><i class=\'fas fa-code-branch\'></i></div>'"></picture></div><h3>Open Source</h3><p>Active contributor to educational libraries and C++ projects on GitHub. Building tools for the developer community.</p><div class="comm-stats">📦 8 repositories</div></div>
+                        <div class="community-card animated-border reveal reveal-delay-3" data-index="2"><div class="comm-img"><picture><source srcset="comm-mentor.avif" type="image/avif"><source srcset="comm-mentor.webp" type="image/webp"><img src="comm-mentor.jpg" alt="Mentorship — Fahad Javed" loading="lazy" decoding="async" width="200" height="200" onerror="this.parentElement.innerHTML='<div class=comm-placeholder><i class=\'fas fa-graduation-cap\'></i></div>'"></picture></div><h3>FAST Mentorship</h3><p>Mentoring junior students in programming fundamentals, OOP, and systems design at FAST-NUCES.</p><div class="comm-stats">🧑‍🏫 10+ mentees</div></div>
+                        <div class="community-card animated-border reveal reveal-delay-4 grid-hidden" data-index="3"><div class="comm-img"><picture><source srcset="comm-forum.avif" type="image/avif"><source srcset="comm-forum.webp" type="image/webp"><img src="comm-forum.jpg" alt="Tech Forums — Fahad Javed" loading="lazy" decoding="async" width="200" height="200" onerror="this.parentElement.innerHTML='<div class=comm-placeholder><i class=\'fas fa-stack-overflow\'></i></div>'"></picture></div><h3>Tech Forums</h3><p>Helping solve C++ and systems programming issues on Stack Overflow and developer communities.</p><div class="comm-stats">💡 50+ answers</div></div>
                     </div>
                     <div class="btn-wrapper"><button class="show-more-btn" data-target="communityGrid"><i class="fas fa-chevron-down" aria-hidden="true"></i><span class="btn-text">Show More</span></button></div>
                 </div>
@@ -1036,13 +999,13 @@
                 <div class="resume-preview animated-border reveal reveal-delay-2">
                     <div class="rp-grid">
                         <div class="rp-col">
-                            <h4>Education</h4>
+                            <h3>Education</h3>
                             <div class="rp-item"><span class="rp-label">BS Computer Science</span><span class="rp-value">FAST-NUCES, 2029</span></div>
                             <div class="rp-item"><span class="rp-label">Intermediate (ICS)</span><span class="rp-value">KIPS College, 2024</span></div>
                             <div class="rp-item"><span class="rp-label">Matriculation</span><span class="rp-value">Govt. High School, 2022</span></div>
                         </div>
                         <div class="rp-col">
-                            <h4>Core Skills</h4>
+                            <h3>Core Skills</h3>
                             <div class="rp-item"><span class="rp-label">Languages</span><span class="rp-value">C++, Python, JS, Java</span></div>
                             <div class="rp-item"><span class="rp-label">Concepts</span><span class="rp-value">OOP, DSA, Memory Mgmt</span></div>
                             <div class="rp-item"><span class="rp-label">Tools</span><span class="rp-value">Git, Linux, SQL, SFML</span></div>
@@ -1198,7 +1161,7 @@
                             <label for="formEmail" class="sr-only">Email Address</label>
                             <input type="email" id="formEmail" name="email" placeholder="Email Address" required aria-required="true" autocomplete="email" />
                             <label for="formSubject" class="sr-only">Subject</label>
-                            <input type="text" id="formSubject" name="subject" placeholder="Subject" />
+                            <input type="text" id="formSubject" name="user_subject" placeholder="Subject" />
                             <label for="formMessage" class="sr-only">Message</label>
                             <textarea id="formMessage" name="message" placeholder="Tell me about your project..." rows="4" required aria-required="true"></textarea>
                             <div class="form-actions">
@@ -1206,7 +1169,8 @@
                                 <button type="reset" class="btn-ghost"><i class="fas fa-undo" aria-hidden="true"></i> Reset</button>
                             </div>
                         </form>
-                        <div id="formSuccess" style="display:none; background:#f0fdf4; border:1px solid #22c55e; border-radius:8px; padding:12px; margin-top:12px; color:#166534;">
+                        <div id="formError" role="alert" aria-live="assertive" style="display:none; background:#fef2f2; border:1px solid #ef4444; border-radius:8px; padding:12px; margin-top:12px; color:#991b1b;"></div>
+                        <div id="formSuccess" role="status" tabindex="-1" style="display:none; background:#f0fdf4; border:1px solid #22c55e; border-radius:8px; padding:12px; margin-top:12px; color:#166534;">
                            ✅ Message sent! I'll respond within 24 hours.
                         </div>
                         <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:8px;">
@@ -1247,7 +1211,7 @@
             <div class="footer-brand"><span class="bracket"></span>Fahad <span class="slash"></span>Javed<span class="bracket"></span></div>
             <nav class="footer-nav" aria-label="Footer navigation">
                 <a href="#hero">Home</a><a href="#about">About</a><a href="#why-hire">Why Hire</a>
-                <a href="#clotheric">Startup</a><a href="#featured">Featured</a><a href="#education">Education</a>
+                <a href="#clotheric">Startup</a><a href="#education">Education</a>
                 <a href="#skills">Skills</a><a href="#process">Process</a><a href="#projects">Projects</a>
                 <a href="#experience">Experience</a><a href="#achievements">Achievements</a><a href="#certificates">Certificates</a>
                 <a href="#services">Services</a><a href="#github">GitHub</a><a href="#coding">Coding</a>
@@ -1271,10 +1235,6 @@
         <span>Profile viewed <strong id="viewCount">0</strong> times</span>
         <button class="vb-close" id="vbClose" aria-label="Close visitor counter"><i class="fas fa-times" aria-hidden="true"></i></button>
     </div>
-
-    <!-- ═══════════════════════════════════════════════════════════════
-    SCRIPTS
-    ═══════════════════════════════════════════════════════════════ -->
 
     <!-- ═══════════════════════════════════════════════════════════════
     SCRIPTS

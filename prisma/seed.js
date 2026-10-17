@@ -77,8 +77,8 @@ async function main() {
     update: {},
     create: {
       id: 'singleton',
-      heading: 'MUHAMMAD FAHAD JAVED',
-      name: 'Muhammad Fahad Javed',
+      heading: 'FAHAD JAVED - CS Student & Developer',
+      name: 'FAHAD JAVED - CS Student & Developer',
       typedRoles: JSON.stringify(['Software Engineer', 'C++ Developer', 'Full Stack Developer', 'Systems Thinker']),
       subtitle: '',
       description: '',

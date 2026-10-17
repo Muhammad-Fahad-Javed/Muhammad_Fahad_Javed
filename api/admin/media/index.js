@@ -1,7 +1,7 @@
 const prisma = require('../../../lib/db');
 const { requireAuth } = require('../../../lib/auth');
 const { getJsonBody, methodNotAllowed } = require('../../../lib/http');
-const { saveFile, validateUpload } = require('../../../lib/storage');
+const { saveFile, validateUpload, normalizeContentType } = require('../../../lib/storage');
 
 module.exports = requireAuth(async (req, res) => {
   if (req.method === 'GET') {
@@ -25,16 +25,17 @@ module.exports = requireAuth(async (req, res) => {
       return;
     }
 
-    const validationError = validateUpload({ contentType, size: buffer.length });
+    const cleanType = normalizeContentType(contentType, filename);
+    const validationError = validateUpload({ contentType: cleanType, filename, size: buffer.length });
     if (validationError) {
       res.status(400).json({ error: validationError });
       return;
     }
 
     try {
-      const { url } = await saveFile({ filename, buffer, contentType });
+      const { url } = await saveFile({ filename, buffer, contentType: cleanType });
       const media = await prisma.media.create({
-        data: { filename, url, type: contentType, size: buffer.length },
+        data: { filename, url, type: cleanType, size: buffer.length },
       });
       res.status(201).json(media);
     } catch (err) {

@@ -23,6 +23,14 @@
     return div.innerHTML;
   }
 
+  // CMS text fields are free-form and often contain doubled or trailing
+  // spaces. Collapse them before writing to <title>/meta tags so the head
+  // never ships malformed values.
+  function tidy(str) {
+    if (typeof str !== 'string') return str;
+    return str.replace(/\s+/g, ' ').trim();
+  }
+
   function withTimeout(promise, ms) {
     return Promise.race([
       promise,
@@ -105,7 +113,18 @@
       var copyEl = document.querySelector('.footer-copy');
       if (copyEl) {
         var yr = new Date().getFullYear();
-        copyEl.innerHTML = '© ' + yr + ' <strong>' + esc(settings.footerText) + '</strong> — Built with purpose. Engineered for impact.';
+        // The CMS footerText may already contain the leading "©" and the closing
+        // tagline (older seeds stored the whole line). Strip them so the rendered
+        // footer never repeats itself, then rebuild a single clean sentence.
+        var brand = String(settings.footerText || '')
+          .replace(/^\s*©\s*/, '')
+          .replace(/\s*—\s*Built with purpose\.\s*Engineered for impact\.?\s*$/i, '')
+          .trim();
+        if (brand) {
+          // Keep the <span id="yr"> hook alive so js/main.js can still update the
+          // year defensively after this CMS hydration pass replaces the markup.
+          copyEl.innerHTML = '© <span id="yr">' + yr + '</span> <strong>' + esc(brand) + '</strong> — Built with purpose. Engineered for impact.';
+        }
       }
     }
   }
@@ -147,8 +166,8 @@
   }
 
   // ---- ABOUT & PROFILE ---------------------------------------------------
-  function applyAbout(about, profile) {
-    if (!about && !profile) return;
+  function applyAbout(about, profile, hero) {
+    if (!about && !profile && !hero) return;
     var wrap = document.querySelector('.hero-about-text');
 
     if (about && wrap) {
@@ -196,8 +215,13 @@
     }
 
     var avatarImg = document.querySelector('.hero-avatar img');
-    var avatarSrc = (profile && profile.profileImage) || (about && about.image);
+    var avatarSrc = (profile && profile.profileImage) || (hero && hero.heroImage) || (about && about.image);
     if (avatarImg && avatarSrc) {
+      var pic = avatarImg.closest('picture');
+      if (pic) {
+        var sources = pic.querySelectorAll('source');
+        sources.forEach(function (s) { s.remove(); });
+      }
       avatarImg.src = avatarSrc;
       avatarImg.onerror = function () {
         this.onerror = null;
@@ -361,7 +385,7 @@
       var delay = 'reveal-delay-' + ((i % 5) + 1);
       return '<div class="edu-card animated-border reveal ' + delay + '">' +
         '<div class="edu-img">' + imgOrPlaceholder(e.logo, e.institution, 'fas fa-university', e.institution) + '</div>' +
-        '<h4>' + esc(e.degree) + '</h4><div class="edu-inst">' + esc(e.institution) + '</div>' +
+        '<h3>' + esc(e.degree) + '</h3><div class="edu-inst">' + esc(e.institution) + '</div>' +
         '<span class="edu-year">' + esc(e.startDate) + ' – ' + esc(e.endDate) + '</span></div>';
     }).join('');
   }
@@ -448,7 +472,7 @@
 
   function applySeo(seo) {
     if (!seo) return;
-    if (seo.siteTitle) document.title = seo.siteTitle;
+    if (tidy(seo.siteTitle)) document.title = tidy(seo.siteTitle);
     var setMeta = function (selector, attr, value) {
       if (!value) return;
       var el = document.querySelector(selector);
@@ -464,14 +488,14 @@
         document.head.appendChild(meta);
       }
     };
-    setMeta('meta[name="description"]', 'content', seo.metaDescription);
-    setMeta('meta[name="keywords"]', 'content', seo.keywords);
-    setMeta('meta[name="author"]', 'content', seo.author);
-    setMeta('meta[property="og:title"]', 'content', seo.ogTitle);
-    setMeta('meta[property="og:description"]', 'content', seo.ogDescription);
+    setMeta('meta[name="description"]', 'content', tidy(seo.metaDescription));
+    setMeta('meta[name="keywords"]', 'content', tidy(seo.keywords));
+    setMeta('meta[name="author"]', 'content', tidy(seo.author));
+    setMeta('meta[property="og:title"]', 'content', tidy(seo.ogTitle));
+    setMeta('meta[property="og:description"]', 'content', tidy(seo.ogDescription));
     setMeta('meta[property="og:image"]', 'content', seo.ogImage);
-    setMeta('meta[name="twitter:title"]', 'content', seo.ogTitle || seo.siteTitle);
-    setMeta('meta[name="twitter:description"]', 'content', seo.ogDescription || seo.metaDescription);
+    setMeta('meta[name="twitter:title"]', 'content', tidy(seo.ogTitle || seo.siteTitle));
+    setMeta('meta[name="twitter:description"]', 'content', tidy(seo.ogDescription || seo.metaDescription));
     setMeta('meta[name="twitter:image"]', 'content', seo.ogImage);
     setMeta('link[rel="canonical"]', 'href', seo.canonicalUrl);
   }
@@ -484,7 +508,45 @@
     document.body.appendChild(s);
   }
 
+  var CACHE_KEY = 'cms_portfolio_cache_v2';
+
+  function applyAll(data) {
+    if (!data) return;
+    var safeApply = function (fn, name, arg1, arg2, arg3) {
+      try {
+        fn(arg1, arg2, arg3);
+      } catch (err) {
+        console.error('[CMS Loader] Error in section "' + name + '":', err);
+      }
+    };
+
+    safeApply(applySiteSettings, 'siteSettings', data['site-settings']);
+    safeApply(applyHero, 'hero', data.hero, data.profile);
+    safeApply(applyAbout, 'about', data.about, data.profile, data.hero);
+    safeApply(applyResume, 'resume', data.profile);
+    safeApply(applySkills, 'skills', data.skills);
+    safeApply(applyProjects, 'projects', data.projects);
+    safeApply(applyCertificates, 'certificates', data.certificates);
+    safeApply(applyExperience, 'experience', data.experience);
+    safeApply(applyEducation, 'education', data.education);
+    safeApply(applyServices, 'services', data.services);
+    safeApply(applyAchievements, 'achievements', data.achievements);
+    safeApply(applyTestimonials, 'testimonials', data.testimonials);
+    safeApply(applySocialAndContact, 'socialAndContact', data['social-links'], data.profile);
+    safeApply(applySeo, 'seo', data.seo);
+  }
+
   function init() {
+    // 1. Instantly apply cached CMS data if present (0ms latency, zero layout shift)
+    try {
+      var cached = localStorage.getItem(CACHE_KEY);
+      if (cached) {
+        var parsed = JSON.parse(cached);
+        applyAll(parsed);
+      }
+    } catch (e) {}
+
+    // 2. Fetch fresh content from API
     var url = ENDPOINT + (ENDPOINT.indexOf('?') === -1 ? '?t=' : '&t=') + Date.now();
     withTimeout(
       fetch(url, {
@@ -499,28 +561,10 @@
       TIMEOUT_MS
     ).then(function (data) {
       if (data) {
-        var safeApply = function (fn, name, arg1, arg2) {
-          try {
-            fn(arg1, arg2);
-          } catch (err) {
-            console.error('[CMS Loader] Error in section "' + name + '":', err);
-          }
-        };
-
-        safeApply(applySiteSettings, 'siteSettings', data['site-settings']);
-        safeApply(applyHero, 'hero', data.hero, data.profile);
-        safeApply(applyAbout, 'about', data.about, data.profile);
-        safeApply(applyResume, 'resume', data.profile);
-        safeApply(applySkills, 'skills', data.skills);
-        safeApply(applyProjects, 'projects', data.projects);
-        safeApply(applyCertificates, 'certificates', data.certificates);
-        safeApply(applyExperience, 'experience', data.experience);
-        safeApply(applyEducation, 'education', data.education);
-        safeApply(applyServices, 'services', data.services);
-        safeApply(applyAchievements, 'achievements', data.achievements);
-        safeApply(applyTestimonials, 'testimonials', data.testimonials);
-        safeApply(applySocialAndContact, 'socialAndContact', data['social-links'], data.profile);
-        safeApply(applySeo, 'seo', data.seo);
+        applyAll(data);
+        try {
+          localStorage.setItem(CACHE_KEY, JSON.stringify(data));
+        } catch (e) {}
       }
       loadMainScript();
     }).catch(function (err) {

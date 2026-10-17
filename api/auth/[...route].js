@@ -79,9 +79,17 @@ async function login(req, res) {
     },
   });
 
-  // If no admin user exists in the database at all, automatically initialize the first admin account
+  // If no admin user exists in the database at all, automatically initialize the first admin account.
+  // Only do this when we can positively confirm the table is empty: a database
+  // or connection error must NOT be treated as "0 admins", otherwise an outage
+  // would let the next visitor claim the admin account.
   if (!user) {
-    const totalAdmins = await prisma.adminUser.count().catch(() => 0);
+    let totalAdmins = null;
+    try {
+      totalAdmins = await prisma.adminUser.count();
+    } catch (e) {
+      console.error('Could not count admin users (skipping bootstrap):', e);
+    }
     if (totalAdmins === 0) {
       if (cleanPassword.length < 8) {
         res.status(400).json({

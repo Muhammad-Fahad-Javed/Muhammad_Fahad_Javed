@@ -4,8 +4,8 @@
   "description": "Portfolio of Muhammad Fahad Javed, Software Engineer",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0a0a0a",
-  "theme_color": "#0a0a0a",
+  "background_color": "#F8F5F1",
+  "theme_color": "#5A3B22",
   "icons": [
     {
       "src": "/favicon-32x32.png",

@@ -419,7 +419,10 @@
             });
         })();
 
-        document.getElementById('yr').textContent = new Date().getFullYear();
+        (function() {
+            const yrEl = document.getElementById('yr');
+            if (yrEl) yrEl.textContent = new Date().getFullYear();
+        })();
 
         // ═══════════════════════════════════════════════════════════════
         // SKILL BAR ANIMATION
@@ -1132,26 +1135,49 @@
         (function() {
             const form = document.getElementById('contactForm');
             const successDiv = document.getElementById('formSuccess');
+            const errorDiv = document.getElementById('formError');
             if (!form) return;
+
+            function showError(message, field) {
+                if (errorDiv) {
+                    errorDiv.textContent = message;
+                    errorDiv.style.display = 'block';
+                }
+                if (field) {
+                    field.setAttribute('aria-invalid', 'true');
+                    field.focus();
+                }
+            }
+
+            function clearError() {
+                if (errorDiv) { errorDiv.textContent = ''; errorDiv.style.display = 'none'; }
+                form.querySelectorAll('[aria-invalid="true"]').forEach(function(el) {
+                    el.removeAttribute('aria-invalid');
+                });
+            }
 
             form.addEventListener('submit', async function(e) {
                 e.preventDefault();
+                clearError();
+                if (successDiv) successDiv.style.display = 'none';
 
                 const name = document.getElementById('formName').value.trim();
                 const email = document.getElementById('formEmail').value.trim();
+                const subjectInput = document.getElementById('formSubject');
+                const subject = subjectInput ? subjectInput.value.trim() : '';
                 const message = document.getElementById('formMessage').value.trim();
 
                 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (name.length < 2) {
+                    showError('Please enter your full name.', document.getElementById('formName'));
+                    return;
+                }
                 if (!emailRegex.test(email)) {
-                    alert('Please enter a valid email address.');
+                    showError('Please enter a valid email address.', document.getElementById('formEmail'));
                     return;
                 }
                 if (message.length < 20) {
-                    alert('Please write at least 20 characters.');
-                    return;
-                }
-                if (name.length < 2) {
-                    alert('Please enter your full name.');
+                    showError('Please write at least 20 characters so I can help properly.', document.getElementById('formMessage'));
                     return;
                 }
 
@@ -1163,11 +1189,13 @@
                 try {
                     const response = await fetch('https://api.web3forms.com/submit', {
                         method: 'POST',
-                        body: JSON.stringify({ 
+                        body: JSON.stringify({
                             access_key: 'c8ef8644-e6d8-4499-8258-a01ff4daa1f1',
-                            name, 
-                            email, 
-                            message 
+                            subject: subject || 'New Portfolio Contact — Fahad Javed',
+                            from_name: 'Fahad Javed Portfolio',
+                            name,
+                            email,
+                            message
                         }),
                         headers: {
                             'Accept': 'application/json',
@@ -1176,16 +1204,20 @@
                     });
 
                     if (response.ok) {
-                        successDiv.style.display = 'block';
+                        if (successDiv) {
+                            successDiv.style.display = 'block';
+                            if (typeof successDiv.focus === 'function') successDiv.focus();
+                        }
                         this.reset();
-                        setTimeout(() => { successDiv.style.display = 'none'; }, 6000);
+                        setTimeout(() => { if (successDiv) successDiv.style.display = 'none'; }, 6000);
                     } else {
-                        const data = await response.json();
-                        alert(data.message || 'Something went wrong. Please try again later.');
+                        let data = null;
+                        try { data = await response.json(); } catch (err) { /* no body */ }
+                        showError((data && data.message) || 'Something went wrong sending your message. Please email me directly instead.');
                     }
                 } catch (error) {
                     console.error('Contact form error:', error);
-                    alert(`Network error: ${error.message}`);
+                    showError('Network error — please check your connection, or email me directly at muhammadfahadjaved610@gmail.com.');
                 } finally {
                     btn.disabled = false;
                     btn.innerHTML = originalText;

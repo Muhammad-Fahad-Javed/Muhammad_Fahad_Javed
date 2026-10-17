@@ -32,7 +32,7 @@
             --trans: 0.5s ease-in-out;
             --trans-slow: 0.7s ease-in-out;
             --trans-bounce: 0.5s ease-in-out;
-            --font-heading: 'Cormorant Garamond', serif;
+            --font-heading: 'Cormorant Garamond', 'Cormorant Fallback', serif;
             --font-body: 'Inter', sans-serif;
             --font-mono: 'JetBrains Mono', monospace;
             --card-padding: 32px;
@@ -298,6 +298,21 @@
         }
         .skip-link:focus {
             top: 1rem;
+        }
+
+        /* ─── SCREEN-READER ONLY ───
+           Used by the contact-form labels (and anywhere else that needs a
+           label for assistive tech without showing it on screen). */
+        .sr-only {
+            position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            padding: 0 !important;
+            margin: -1px !important;
+            overflow: hidden !important;
+            clip: rect(0, 0, 0, 0) !important;
+            white-space: nowrap !important;
+            border: 0 !important;
         }
 
         /* ─── REVEAL ─── */
@@ -1228,6 +1243,20 @@
         /* ═══════════════════════════════════════════════════════════════
            HERO — CINEMATIC EXPERIENCE
            ═══════════════════════════════════════════════════════════════ */
+        /* Metric-matched local fallback for the display font. Without it the
+           hero name wraps to 3 lines with the OS serif and to 2 lines once
+           Cormorant Garamond swaps in — a ~67px jump that dominated CLS.
+           size-adjust reproduces Cormorant's advance width so the fallback
+           occupies the same space and the swap causes no reflow. */
+        @font-face {
+            font-family: 'Cormorant Fallback';
+            src: local('Times New Roman'), local('Liberation Serif'), local('Georgia');
+            size-adjust: 90%;
+            ascent-override: 95%;
+            descent-override: 25%;
+            line-gap-override: 0%;
+        }
+
         .hero-name-section {
             min-height: 100vh;
             display: flex;
@@ -1337,9 +1366,9 @@
 
         .name-os {
             font-family: var(--font-heading);
-            font-size: clamp(3rem, 11vw, 7.4rem);
+            font-size: clamp(2.4rem, 8vw, 5.8rem);
             font-weight: 500;
-            line-height: 0.95;
+            line-height: 1.05;
             letter-spacing: 1px;
             background: linear-gradient(180deg, #2B1F17 45%, rgba(46, 33, 24, 0.25));
             -webkit-background-clip: text;
@@ -1351,6 +1380,22 @@
             text-shadow: none;
             transition: text-shadow 0.6s ease;
             opacity: 0;
+            text-align: center;
+            max-width: 95%;
+            margin: 0 auto;
+        }
+        .name-os .name-sub {
+            display: block;
+            font-family: var(--font-body);
+            font-size: clamp(0.75rem, 2.2vw, 1.35rem);
+            font-weight: 600;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: var(--text-secondary, #6A5A4C);
+            -webkit-text-fill-color: var(--text-secondary, #6A5A4C);
+            margin-top: 8px;
+            line-height: 1.35;
+            opacity: 0.9;
         }
         .name-os:hover {
             text-shadow: 0 0 80px rgba(90, 59, 34, 0.3);
@@ -1702,7 +1747,7 @@
             color: var(--accent);
             font-size: 1.4rem;
         }
-        .edu-card h4 {
+        .edu-card h3 {
             font-size: 0.9rem;
             font-weight: 600;
             font-family: var(--font-heading);
@@ -2073,7 +2118,7 @@
             font-family: var(--font-mono);
             opacity: 0.3;
         }
-        .process-step h4 {
+        .process-step h3 {
             font-size: 0.65rem;
             font-weight: 600;
             font-family: var(--font-heading);
@@ -2095,7 +2140,7 @@
         @media (max-width: 480px) {
             .process-timeline { grid-template-columns: 1fr 1fr; gap: 12px; }
             .process-step .ps-icon { width: 44px; height: 44px; font-size: 1rem; }
-            .process-step h4 { font-size: 0.55rem; }
+            .process-step h3 { font-size: 0.55rem; }
             .process-step p { font-size: 0.4rem; }
         }
 
@@ -3287,7 +3332,7 @@
             text-transform: uppercase;
             font-family: var(--font-body);
         }
-        .journey-timeline .j-item h4 {
+        .journey-timeline .j-item h3 {
             font-size: 0.9rem;
             font-weight: 600;
             font-family: var(--font-heading);
@@ -3400,7 +3445,7 @@
             color: var(--accent);
             font-family: var(--font-body);
         }
-        .blog-card h4 {
+        .blog-card h3 {
             font-size: 0.85rem;
             font-weight: 600;
             margin: 6px 0 4px;
@@ -3502,7 +3547,7 @@
             border-color: var(--accent);
             transform: scale(1.06);
         }
-        .community-card h4 {
+        .community-card h3 {
             font-size: 0.9rem;
             font-weight: 600;
             font-family: var(--font-heading);
@@ -3694,7 +3739,7 @@
             grid-template-columns: 1fr 1fr;
             gap: 28px;
         }
-        .resume-preview .rp-col h4 {
+        .resume-preview .rp-col h3 {
             font-size: 0.6rem;
             font-weight: 600;
             letter-spacing: 2px;
@@ -4342,7 +4387,8 @@
             .hero-name-section { padding: 20px; }
             .refraction-plate { padding: 32px 16px; border-radius: 24px; }
             .hero-role-new { font-size: 0.5rem; letter-spacing: 1px; margin-top: 14px; }
-            .name-os { font-size: clamp(2.2rem, 9vw, 3.2rem); letter-spacing: 0px; }
+            .name-os { font-size: clamp(1.9rem, 7.5vw, 2.8rem); letter-spacing: 0px; }
+            .name-os .name-sub { font-size: clamp(0.65rem, 2.8vw, 0.85rem); letter-spacing: 1.5px; margin-top: 6px; }
             .services-grid { grid-template-columns: 1fr; }
             .community-grid { grid-template-columns: 1fr; }
             .certs-grid { grid-template-columns: 1fr; }
@@ -4364,7 +4410,8 @@
         @media (max-width: 360px) {
             .hero-name-section { padding: 12px; }
             .refraction-plate { padding: 24px 12px; border-radius: 20px; }
-            .name-os { font-size: clamp(1.8rem, 7vw, 2.4rem); letter-spacing: 0px; }
+            .name-os { font-size: clamp(1.6rem, 6.8vw, 2.2rem); letter-spacing: 0px; }
+            .name-os .name-sub { font-size: clamp(0.55rem, 2.5vw, 0.72rem); letter-spacing: 1px; margin-top: 4px; }
             .hero-role-new { font-size: 0.45rem; letter-spacing: 0.5px; margin-top: 10px; }
             .hero-avatar { width: 80px; height: 80px; }
             .hero-about-text h2 { font-size: 0.85rem; }
