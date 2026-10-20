@@ -103,6 +103,9 @@ const changePassword = requireAuth(async (req, res) => {
   if (!currentPassword || !newPassword) {
     throw badRequest('Current and new password are required.');
   }
+  if (typeof currentPassword !== 'string' || typeof newPassword !== 'string') {
+    throw badRequest('Passwords must be strings.');
+  }
   try {
     assertPasswordUsable(newPassword);
   } catch (err) {
@@ -112,13 +115,18 @@ const changePassword = requireAuth(async (req, res) => {
   const user = await prisma.adminUser.findUnique({ where: { id: req.admin.sub } });
   if (!user) throw unauthorized('Admin user not found.');
 
+  // The throttle must be checked BEFORE the password comparison. Checking it
+  // only after a failed guess lets an attacker holding a stolen session keep
+  // guessing the current password: the correct guess would still succeed.
+  const ip = getClientIp(req);
+  if (await isRateLimited({ ip, identifier: user.email })) {
+    res.status(429).json({ error: 'Too many attempts. Please try again later.', code: 'RATE_LIMITED' });
+    return;
+  }
+
   const valid = await comparePassword(currentPassword, user.passwordHash);
   if (!valid) {
-    await recordAttempt({ ip: getClientIp(req), identifier: user.email, success: false });
-    if (await isRateLimited({ ip: getClientIp(req), identifier: user.email })) {
-      res.status(429).json({ error: 'Too many attempts. Please try again later.', code: 'RATE_LIMITED' });
-      return;
-    }
+    await recordAttempt({ ip, identifier: user.email, success: false });
     res.status(401).json({ error: 'Current password is incorrect.', code: 'INVALID_CREDENTIALS' });
     return;
   }

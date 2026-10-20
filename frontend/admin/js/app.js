@@ -3,6 +3,12 @@
 
   var contentEl, sidebarNavEl, topbarTitleEl;
 
+  // Own-property lookup: route segments come from location.hash, so keys such
+  // as "__proto__" or "constructor" must never resolve to a registry entry.
+  function lookup(registry, key) {
+    return registry && Object.prototype.hasOwnProperty.call(registry, key) ? registry[key] : undefined;
+  }
+
   // ---------------------------------------------------------------------
   // Field rendering (generic form engine)
   // ---------------------------------------------------------------------
@@ -99,7 +105,20 @@
         if (isPdf) {
           thumbBox.innerHTML = '<div style="padding:12px;background:#f3f4f6;border-radius:8px;display:flex;align-items:center;gap:10px;"><i class="fas fa-file-pdf" style="font-size:1.8rem;color:#dc2626;"></i><div style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:0.82rem;color:#374151;">' + UI.escapeHtml(currentUrl) + '</div></div>';
         } else {
-          thumbBox.innerHTML = '<img src="' + UI.escapeHtml(currentUrl) + '" style="max-height:140px;max-width:100%;border-radius:8px;border:1px solid #e5e7eb;object-fit:contain;background:#f9fafb;" onerror="this.onerror=null;this.parentElement.innerHTML=\'<div class=no-image style=\\\'padding:12px;background:#fee2e2;border-radius:8px;color:#b91c1c;font-size:0.85rem;\\\'><i class=\\\'fas fa-triangle-exclamation\\\'></i> Image failed to load (check URL)</div>\'">';
+          thumbBox.innerHTML = '';
+          var thumbImg = document.createElement('img');
+          thumbImg.style.cssText = 'max-height:140px;max-width:100%;border-radius:8px;border:1px solid #e5e7eb;object-fit:contain;background:#f9fafb;';
+          thumbImg.addEventListener('error', function () {
+            var failed = document.createElement('div');
+            failed.className = 'no-image';
+            failed.style.cssText = 'padding:12px;background:#fee2e2;border-radius:8px;color:#b91c1c;font-size:0.85rem;';
+            failed.innerHTML = '<i class="fas fa-triangle-exclamation"></i> ';
+            failed.appendChild(document.createTextNode('Image failed to load (check URL)'));
+            thumbBox.innerHTML = '';
+            thumbBox.appendChild(failed);
+          }, { once: true });
+          thumbImg.src = currentUrl;
+          thumbBox.appendChild(thumbImg);
         }
       }
 
@@ -352,7 +371,7 @@
   }
 
   async function renderCollectionList(key) {
-    var def = window.CMS_COLLECTIONS[key];
+    var def = lookup(window.CMS_COLLECTIONS, key);
     if (!def) { contentEl.innerHTML = '<div class="panel-body">Unknown resource.</div>'; return; }
     topbarTitleEl.textContent = def.label;
     contentEl.innerHTML = '<div class="loading-row"><span class="spinner"></span></div>';
@@ -395,25 +414,25 @@
     function row(item) {
       var tr = document.createElement('tr');
       tr.draggable = !!def.orderable;
-      tr.dataset.id = item.id;
+      tr.dataset.id = String(item.id);
       var published = def.publishField ? item[def.publishField] : true;
       var titleVal = item[def.titleField] || '(untitled)';
       tr.innerHTML =
         (def.orderable ? '<td class="drag-handle"><i class="fas fa-grip-vertical"></i></td>' : '') +
         (def.imageField ? '<td>' + (item[def.imageField] ? '<img class="thumb" src="' + UI.escapeHtml(item[def.imageField]) + '">' : '<div class="thumb" style="background:#eee;"></div>') + '</td>' : '') +
-        '<td><a href="#/collection/' + key + '/' + item.id + '">' + UI.escapeHtml(titleVal) + '</a>' +
+        '<td><a href="#/collection/' + key + '/' + encodeURIComponent(item.id) + '">' + UI.escapeHtml(titleVal) + '</a>' +
         (def.featuredField && item[def.featuredField] ? '<span class="badge badge-featured">Featured</span>' : '') + '</td>' +
         '<td><span class="badge ' + (published ? 'badge-published' : 'badge-draft') + '">' + (published ? 'Published' : 'Hidden') + '</span></td>' +
         '<td class="row-actions">' +
         (def.publishField ? '<button class="btn btn-sm toggle-publish" title="Toggle visibility"><i class="fas fa-eye' + (published ? '-slash' : '') + '"></i></button>' : '') +
-        '<a class="btn btn-sm" href="#/collection/' + key + '/' + item.id + '"><i class="fas fa-pen"></i></a>' +
+        '<a class="btn btn-sm" href="#/collection/' + key + '/' + encodeURIComponent(item.id) + '"><i class="fas fa-pen"></i></a>' +
         '<button class="btn btn-sm btn-danger delete-item"><i class="fas fa-trash"></i></button>' +
         '</td>';
 
       if (def.publishField) {
         tr.querySelector('.toggle-publish').addEventListener('click', async function () {
           try {
-            await AdminAPI.patch('/api/admin/' + key + '/' + item.id, { [def.publishField]: !published });
+            await AdminAPI.patch('/api/admin/' + key + '/' + encodeURIComponent(item.id), { [def.publishField]: !published });
             try { localStorage.removeItem('cms_portfolio_cache_v2'); } catch (e) {}
             UI.toast(published ? 'Hidden.' : 'Published.', 'success');
             renderCollectionList(key);
@@ -428,7 +447,7 @@
         });
         if (!ok) return;
         try {
-          await AdminAPI.del('/api/admin/' + key + '/' + item.id);
+          await AdminAPI.del('/api/admin/' + key + '/' + encodeURIComponent(item.id));
           try { localStorage.removeItem('cms_portfolio_cache_v2'); } catch (e) {}
           UI.toast('Deleted.', 'success');
           renderCollectionList(key);
@@ -472,8 +491,9 @@
   }
 
   async function renderCollectionForm(key, id) {
-    var def = window.CMS_COLLECTIONS[key];
+    var def = lookup(window.CMS_COLLECTIONS, key);
     if (!def) { contentEl.innerHTML = '<div class="panel-body">Unknown resource.</div>'; return; }
+    try { id = decodeURIComponent(id); } catch (e) { contentEl.innerHTML = '<div class="panel-body">Invalid item id.</div>'; return; }
     var isNew = id === 'new';
     topbarTitleEl.textContent = (isNew ? 'New ' : 'Edit ') + def.label.replace(/s$/, '');
     contentEl.innerHTML = '<div class="loading-row"><span class="spinner"></span></div>';
@@ -481,7 +501,7 @@
     var values = {};
     if (!isNew) {
       try {
-        values = await AdminAPI.get('/api/admin/' + key + '/' + id);
+        values = await AdminAPI.get('/api/admin/' + key + '/' + encodeURIComponent(id));
       } catch (err) {
         contentEl.innerHTML = '<div class="panel-body">Failed to load: ' + UI.escapeHtml(err.message) + '</div>';
         return;
@@ -511,7 +531,7 @@
         if (values && values.updatedAt) {
           body = Object.assign({}, payload, { updatedAt: values.updatedAt });
         }
-        await AdminAPI.put('/api/admin/' + key + '/' + id, body);
+        await AdminAPI.put('/api/admin/' + key + '/' + encodeURIComponent(id), body);
         UI.toast('Saved.', 'success');
       }
       try { localStorage.removeItem('cms_portfolio_cache_v2'); } catch (e) {}
@@ -525,7 +545,7 @@
   }
 
   async function renderSingletonForm(key) {
-    var def = window.CMS_SINGLETONS[key];
+    var def = lookup(window.CMS_SINGLETONS, key);
     if (!def) { contentEl.innerHTML = '<div class="panel-body">Unknown settings page.</div>'; return; }
     topbarTitleEl.textContent = def.label;
     contentEl.innerHTML = '<div class="loading-row"><span class="spinner"></span></div>';
@@ -616,7 +636,7 @@
   var SETTINGS_SINGLETONS = ['contact', 'seo', 'site-settings'];
 
   function singletonItem(key) {
-    var def = window.CMS_SINGLETONS[key];
+    var def = lookup(window.CMS_SINGLETONS, key);
     return { label: def.label, icon: def.icon, href: '#/singleton/' + key };
   }
 

@@ -11,6 +11,8 @@ const {
 const { sendError, badRequest } = require('../../lib/errors');
 const { recordAudit } = require('../../lib/audit');
 
+const SAFE_ID = /^[A-Za-z0-9_-]{1,64}$/;
+
 // Import is additive/upsert-only by design: rows whose id already exists are
 // updated in place, everything else is inserted. Nothing is ever deleted.
 //
@@ -46,12 +48,15 @@ module.exports = requireAuth(async (req, res) => {
           errors.push(`${where} is not an object.`);
           return;
         }
-        if (row.id !== undefined && (typeof row.id !== 'string' || !row.id)) {
-          errors.push(`${where}.id must be a non-empty string.`);
+        // Ids are later rendered into admin URLs/attributes and used as DB
+        // keys, so an imported file must not be able to smuggle markup or
+        // oversized values through them.
+        if (row.id !== undefined && (typeof row.id !== 'string' || !SAFE_ID.test(row.id))) {
+          errors.push(`${where}.id must be 1-64 characters of letters, digits, "_" or "-".`);
           return;
         }
         if (row.id && seenIds.has(row.id)) {
-          errors.push(`${where}.id "${row.id}" is duplicated.`);
+          errors.push(`${where}.id is duplicated.`);
           return;
         }
         const rowErrors = validatePayload(row, def, { partial: true });

@@ -1068,6 +1068,15 @@
                     return;
                 }
 
+                // Honeypot: real visitors never tick this hidden checkbox. Bots that
+                // auto-fill every field get a fake "sent" state and nothing is sent.
+                const trap = document.getElementById('formBotcheck');
+                if (trap && trap.checked) {
+                    if (successDiv) successDiv.style.display = 'block';
+                    this.reset();
+                    return;
+                }
+
                 const btn = this.querySelector('button[type="submit"]');
                 const originalText = btn.innerHTML;
                 btn.disabled = true;
@@ -1082,7 +1091,8 @@
                             from_name: 'Fahad Javed Portfolio',
                             name,
                             email,
-                            message
+                            message,
+                            botcheck: false
                         }),
                         headers: {
                             'Accept': 'application/json',
@@ -1116,13 +1126,3 @@
         // SERVICE WORKER REGISTRATION
         // ═══════════════════════════════════════════════════════════════
         // Service worker removed (no sw.js present)
-
-
-        console.log('🚀 Premium Portfolio Upgrade Complete');
-        console.log('✅ Animated borders on cards (scroll-triggered)');
-        console.log('✅ Text reveal animations');
-        console.log('✅ Cinematic hero with parallax and depth');
-        console.log('✅ Scroll progress indicator');
-        console.log('✅ Navbar active indicator');
-        console.log('✅ Performance optimized with IntersectionObserver');
-        console.log('✅ respects prefers-reduced-motion');

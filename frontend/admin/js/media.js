@@ -147,16 +147,16 @@ window.Media = (function () {
       }
       grid.innerHTML = items.map(function (m) {
         var isImage = (m.type || '').startsWith('image/');
-        return '<div class="media-item" data-id="' + m.id + '">' +
+        return '<div class="media-item" data-id="' + UI.escapeHtml(m.id) + '">' +
           (isImage ? '<img src="' + UI.escapeHtml(m.url) + '">' : '<div style="height:100px;display:flex;align-items:center;justify-content:center;"><i class="fas fa-file-pdf" style="font-size:1.6rem;color:#999;"></i></div>') +
-          '<button class="media-delete" title="Delete" data-id="' + m.id + '"><i class="fas fa-trash"></i></button>' +
+          '<button class="media-delete" title="Delete" data-id="' + UI.escapeHtml(m.id) + '"><i class="fas fa-trash"></i></button>' +
           '<div class="media-name">' + UI.escapeHtml(m.filename) + '</div></div>';
       }).join('');
       grid.querySelectorAll('.media-delete').forEach(function (btn) {
         btn.addEventListener('click', async function () {
           var ok = await UI.confirmDialog({ title: 'Delete this file?', message: 'This cannot be undone.', danger: true, confirmLabel: 'Delete' });
           if (!ok) return;
-          await AdminAPI.del('/api/admin/media/' + btn.getAttribute('data-id'));
+          await AdminAPI.del('/api/admin/media/' + encodeURIComponent(btn.getAttribute('data-id')));
           UI.toast('Deleted.', 'success');
           load();
         });
