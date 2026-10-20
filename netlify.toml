@@ -1,0 +1,76 @@
+# ============================================================================
+# Netlify — static portfolio only.
+#
+# The public site is a plain static page in frontend/. Everything under api/ is
+# written as a Vercel serverless function (Vercel's (req, res) signature and
+# bracket routing such as [resource] and [...route]), which Netlify does not
+# pick up. That means, on this host:
+#
+#   - the public page still works: content-loader.js cannot reach
+#     /api/public/content, gives up, and the content committed in
+#     frontend/index.html is shown;
+#   - /admin loads, but login and every CMS action fail (no API);
+#   - image uploads (stored through @vercel/blob) do not work.
+#
+# For the full CMS, deploy the same repository on Vercel instead — it needs no
+# changes there, only the environment variables (see .env.example).
+#
+# No build runs here: there is nothing to compile, and the postinstall hook
+# (`prisma generate`) requires a DATABASE_URL that a static deploy never uses.
+# NPM_FLAGS stops lifecycle scripts in case Netlify still installs packages.
+# ============================================================================
+
+[build]
+  publish = "frontend"
+  # A no-op command (not an empty string) so Netlify overrides any build command
+  # still configured in the UI. `npm run build` would run `prisma generate`,
+  # which needs a DATABASE_URL that a static deploy never uses.
+  command = "echo 'static deploy: nothing to build'"
+
+[build.environment]
+  NPM_FLAGS = "--ignore-scripts"
+
+# Same rewrites as vercel.json, so /admin works without a trailing slash.
+[[redirects]]
+  from = "/admin"
+  to = "/admin/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/admin/"
+  to = "/admin/index.html"
+  status = 200
+
+# Security headers mirrored from vercel.json (Netlify ignores that file).
+[[headers]]
+  for = "/admin/*"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "no-store"
+    X-Content-Type-Options = "nosniff"
+    Cross-Origin-Opener-Policy = "same-origin"
+    Content-Security-Policy = "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src https://cdnjs.cloudflare.com; img-src 'self' data: blob: https:; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'"
+
+[[headers]]
+  for = "/admin"
+  [headers.values]
+    X-Robots-Tag = "noindex, nofollow"
+    Cache-Control = "no-store"
+    X-Content-Type-Options = "nosniff"
+    Cross-Origin-Opener-Policy = "same-origin"
+    Content-Security-Policy = "default-src 'none'; script-src 'self'; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src https://cdnjs.cloudflare.com; img-src 'self' data: blob: https:; connect-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; object-src 'none'"
+
+[[headers]]
+  for = "/uploads/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Content-Security-Policy = "default-src 'none'"
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Strict-Transport-Security = "max-age=31536000"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=()"

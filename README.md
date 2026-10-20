@@ -228,6 +228,21 @@ Redeploying after a significant SEO change keeps those in sync too.
 No changes to your custom domain, DNS, or the rest of the Vercel project are
 required.
 
+### Netlify (static site only)
+
+`netlify.toml` publishes `frontend/` with a no-op build and mirrors the
+redirects and security headers from `vercel.json`. The public page works there,
+but only as a static snapshot:
+
+- Everything under `api/` is a Vercel function, so `/api/*` does not exist on
+  Netlify. Login, CMS editing, uploads and live content updates are unavailable;
+  `frontend/js/content-loader.js` falls back to the content committed in
+  `frontend/index.html`.
+- The build command is deliberately a no-op. `npm run build` runs
+  `prisma generate`, which requires `DATABASE_URL`; `NPM_FLAGS=--ignore-scripts`
+  stops the postinstall hook from doing the same during install.
+- For the admin dashboard and the API, deploy on Vercel.
+
 ## 9. Security notes
 - Passwords are hashed with bcrypt; sessions are signed JWTs in httpOnly,
   `SameSite=Lax` cookies (not accessible to JavaScript, not sent cross-site).
