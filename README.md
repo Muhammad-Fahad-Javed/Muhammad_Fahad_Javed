@@ -275,3 +275,27 @@ disappears — all without touching source code.
   only, by design, as requested.
 - Local dev without a Blob token stores uploads on local disk — fine for
   testing, but connect Vercel Blob before you rely on uploads in production.
+
+## 13. Profile sync (GitHub)
+
+The portfolio can pull your GitHub profile and featured repositories through
+the official API, with the safeguards that make automatic updates safe on a
+hand-edited site: locked fields, fill-only prose, empty values never overwrite
+content, and every run logged.
+
+```bash
+# once
+npm run db:deploy          # applies the additive profile_sync migration
+
+# then, with SYNC_ENCRYPTION_KEY and CRON_SECRET set:
+#   POST /api/sync/github   { "token": "github_pat_…" }
+#   POST /api/sync/run      { "provider": "github" }
+```
+
+Only projects that name a repository in **Projects → GitHub Repository
+(owner/name)** are ever updated — that field is the featured-projects
+allowlist.
+
+A scheduled daily run is registered in `vercel.json` at `/api/cron/sync`.
+
+Full details, security model and limitations: **`docs/PROFILE_SYNC.md`**.

@@ -8,6 +8,9 @@
     { "source": "/admin", "destination": "/admin/index.html" },
     { "source": "/admin/", "destination": "/admin/index.html" }
   ],
+  "crons": [
+    { "path": "/api/cron/sync", "schedule": "0 6 * * *" }
+  ],
   "headers": [
     {
       "source": "/sitemap.xml",

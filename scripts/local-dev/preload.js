@@ -31,6 +31,13 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 // ADMIN_PASSWORD in .env is never reused on the local machine.
 process.env.ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'local-dev-password';
 
+// Local-only integration credentials. These are throwaway values so the sync
+// endpoints can be exercised offline; they never leave this machine and a real
+// production key in .env is deliberately NOT used here.
+process.env.SYNC_ENCRYPTION_KEY =
+  process.env.LOCAL_SYNC_ENCRYPTION_KEY || 'local-dev-only-sync-key-0123456789abcdef';
+process.env.CRON_SECRET = process.env.LOCAL_CRON_SECRET || 'local-dev-cron-secret';
+
 let PrismaClient;
 try {
   ({ PrismaClient } = require(CLIENT_DIR));

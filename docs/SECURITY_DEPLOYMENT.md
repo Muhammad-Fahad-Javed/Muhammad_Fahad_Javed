@@ -45,6 +45,16 @@ security hardening. Nothing here has been run against production.
      only read by the explicit provisioning command (step 5).
    - Optional: `TRUSTED_PROXY_HOPS` (default `1` = trust the last
      `X-Forwarded-For` entry added by the platform edge). Leave unset on Vercel.
+   - `SYNC_ENCRYPTION_KEY` — **only if profile sync is used**. Random, at least
+     32 characters (`openssl rand -base64 48`). Without it, connecting a GitHub
+     integration fails closed; the public site is unaffected. Rotating this key
+     invalidates stored integration credentials (reconnect afterwards).
+   - `CRON_SECRET` — **only if the scheduled sync is used**, at least 16
+     characters. `/api/cron/sync` returns 503 rather than running unprotected
+     when it is missing. Vercel forwards it automatically as
+     `Authorization: Bearer <CRON_SECRET>`.
+   - `LINKEDIN_CLIENT_ID` / `LINKEDIN_CLIENT_SECRET` — not used yet; LinkedIn
+     sync is not enabled (see `docs/PROFILE_SYNC.md`).
 3. **Verify the build is clean.**
    ```bash
    npm ci
@@ -124,6 +134,14 @@ new collections start out empty.
 3. Watch the function logs for `[config] Startup configuration problems:`.
    Any such line means a required variable is missing and the API will fail
    closed until it is fixed.
+4. Apply pending migrations **before** the new code serves traffic:
+   ```bash
+   npm run db:status     # shows what is pending
+   npm run db:deploy     # additive only: never drops or rewrites a column
+   ```
+   `20261020000000_profile_sync` adds three tables (`Integration`,
+   `FieldState`, `SyncRun`) and three defaulted columns. See
+   `docs/PROFILE_SYNC.md`.
 
 ---
 

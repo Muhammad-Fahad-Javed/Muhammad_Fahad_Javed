@@ -205,6 +205,12 @@ model Project {
   featured     Boolean  @default(false)
   published    Boolean  @default(true)
   order        Int      @default(0)
+  // The featured-projects allowlist: a repo is only ever synced into a project
+  // that already names it here. Empty means "manual project, leave it alone".
+  githubRepo    String    @default("")
+  // Repository timestamp reported by GitHub. Internal metadata only; it is not
+  // in the public registry, so it is never published.
+  repoUpdatedAt DateTime?
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 }
@@ -496,6 +502,8 @@ model GithubSection {
   showContributions Boolean  @default(true)
   showRepos         Boolean  @default(true)
   repoLimit         Int      @default(6)
+  // Opt-in: replace the curated profile photo with the GitHub avatar on sync.
+  syncAvatar        Boolean  @default(false)
   updatedAt         DateTime @updatedAt
 }
 
@@ -509,3 +517,68 @@ model Media {
   height    Int?
   createdAt DateTime @default(now())
 }
+
+// ---------------------------------------------------------------------------
+// PROFILE SYNC (GitHub / LinkedIn integrations)
+// ---------------------------------------------------------------------------
+
+// One row per provider. Credentials live here, sealed with AES-256-GCM, and
+// are never returned by any API or written to a log.
+model Integration {
+  id              String    @id @default(cuid())
+  provider        String    @unique // "github" | "linkedin"
+  status          String    @default("disconnected") // disconnected|connected|error
+  accountLabel    String    @default("") // public handle / display name, never a secret
+  accountId       String    @default("")
+  scopes          String    @default("")
+  accessTokenEnc  String?
+  refreshTokenEnc String?
+  tokenExpiresAt  DateTime?
+  lastSyncAt      DateTime?
+  lastSyncStatus  String    @default("") // ""|success|error
+  lastError       String    @default("") // sanitised; never contains a token
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+// Per-field provenance. One row per (entity, entityId, field) that a sync or
+// the operator has touched: where the value came from, when, whether it is
+// locked against automation, and whether it may appear publicly.
+//
+// `visible` applies to singleton fields; collection rows keep using their own
+// existing `published` / `visible` columns.
+model FieldState {
+  id        String    @id @default(cuid())
+  entity    String // profile|hero|about|github|linkedin|project
+  entityId  String    @default("") // "" for singletons
+  field     String
+  source    String    @default("manual") // manual|github|linkedin|import
+  syncedAt  DateTime?
+  status    String    @default("ok") // ok|stale|error
+  locked    Boolean   @default(false)
+  visible   Boolean   @default(true)
+  valueHash String    @default("")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  @@unique([entity, entityId, field])
+  @@index([entity, entityId])
+}
+
+// Audit log for synchronisation attempts. Stores counts and a sanitised
+// message; never a credential and never a payload value.
+model SyncRun {
+  id            String    @id @default(cuid())
+  provider      String
+  trigger       String    @default("manual") // manual|cron|connect
+  status        String    @default("running") // running|success|partial|error
+  startedAt     DateTime  @default(now())
+  finishedAt    DateTime?
+  fieldsChanged Int       @default(0)
+  fieldsSkipped Int       @default(0)
+  message       String    @default("")
+
+  @@index([provider, startedAt])
+  @@index([startedAt])
+}
+
