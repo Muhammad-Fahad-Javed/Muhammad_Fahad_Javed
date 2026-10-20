@@ -88,3 +88,18 @@ git push        # Vercel builds as before
 ```
 
 After deploying, confirm `curl -sI https://<your-site>/admin | grep -i content-security` shows the new header and that you can log in. Existing admin sessions stay valid until they expire. Rollback: redeploy the previous Vercel deployment.
+
+## Verified in this checkout (2026-10-20)
+
+These fixes were ported onto the profile-sync commit (`c56da94`), which post-dates
+the audit branch. Results on this machine:
+
+| Check | Result |
+|---|---|
+| `node --test "tests/**/*.test.js"` | 129 pass / 0 fail (the sandbox-only `E2` failure above does not occur here) |
+| `npm run test:registry` (equivalent) | pass |
+| Admin login → dashboard (real browser) | pass, zero console errors |
+| `#/__proto__` route | renders the fallback, no crash |
+| Colour field with `red;background:url(x)` | 400 `VALIDATION_ERROR` |
+| Change-password while throttled (correct password) | 429 `RATE_LIMITED`, stored hash unchanged |
+
